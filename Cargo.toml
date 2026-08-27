@@ -1,0 +1,14 @@
+[package]
+name = "underkb"
+version = "0.1.0"
+edition = "2021"
+description = "Compress any image under 200 KB — or any size you set."
+
+[dependencies]
+resuma = "1.3.0"
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+axum = { version = "0.8", features = ["multipart"] }
+image = { version = "0.25", default-features = false, features = ["jpeg", "png", "gif", "webp"] }
+getrandom = "0.3"

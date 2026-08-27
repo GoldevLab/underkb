@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="UnderKb  compress an image under 200 KB">
+  <rect width="1200" height="630" fill="#0b1211"/>
+  <rect x="80" y="80" width="1040" height="470" rx="28" fill="#15201e"/>
+  <rect x="120" y="200" width="88" height="88" rx="20" fill="#0d9488"/>
+  <text x="164" y="256" text-anchor="middle" fill="#ffffff" font-family="DM Sans, system-ui, sans-serif" font-size="28" font-weight="700">kB</text>
+  <text x="236" y="256" fill="#e7f4f1" font-family="DM Sans, system-ui, sans-serif" font-size="64" font-weight="700">UnderKb</text>
+  <text x="120" y="360" fill="#9bb4ae" font-family="DM Sans, system-ui, sans-serif" font-size="36">Compress an image under 200 KB</text>
+  <text x="120" y="420" fill="#5eead4" font-family="DM Sans, system-ui, sans-serif" font-size="24">JPG · WebP · PNG · no account</text>
+</svg>
