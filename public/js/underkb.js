@@ -268,13 +268,13 @@
     if (input?.files?.[0]) pick(input.files[0]);
     kb?.addEventListener("input", syncPresets);
     formatEl?.addEventListener("change", syncFormatHint);
-      root.querySelectorAll("[data-preset]").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          if (btn.hidden) return;
-          if (kb) kb.value = btn.getAttribute("data-preset") || "200";
-          syncPresets();
-        });
+    root.querySelectorAll("[data-preset]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (btn.hidden) return;
+        if (kb) kb.value = btn.getAttribute("data-preset") || "200";
+        syncPresets();
       });
+    });
 
     form?.addEventListener("submit", async (e) => {
       e.preventDefault();
