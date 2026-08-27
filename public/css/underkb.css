@@ -25,6 +25,9 @@
 *::before,
 *::after { box-sizing: border-box; }
 
+/* Author `display` (e.g. `.result { display: grid }`) otherwise wins over [hidden]. */
+[hidden] { display: none !important; }
+
 html { -webkit-text-size-adjust: 100%; overflow-x: clip; }
 
 body {
@@ -167,6 +170,16 @@ h1, h2, h3 {
   outline-offset: 2px;
 }
 
+.drop-preview {
+  display: block;
+  max-width: min(100%, 16rem);
+  max-height: 10rem;
+  margin: 0 auto 0.75rem;
+  object-fit: contain;
+  border-radius: 8px;
+  background: var(--bg-elev);
+}
+
 .drop-title {
   display: block;
   font-weight: 700;
@@ -283,6 +296,10 @@ select:focus-visible {
   object-fit: contain;
   border-radius: 10px;
   background: var(--bg-soft);
+}
+
+.result img:not([src]) {
+  display: none !important;
 }
 
 .result-name { margin: 0; font-weight: 700; }

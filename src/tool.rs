@@ -22,6 +22,7 @@ pub fn compressor() -> View {
     const gifNote = root.querySelector("[data-gif]");
     const formatHint = root.querySelector("[data-format-hint]");
     const formatEl = root.querySelector("[data-format]");
+    const dropPrev = root.querySelector("[data-drop-preview]");
     let file = null;
     let beforeUrl = "";
     let origW = 0;
@@ -166,6 +167,7 @@ pub fn compressor() -> View {
         if (f.size > 20 * 1024 * 1024) { setError("That file is over 20 MB."); return; }
         file = f;
         if (beforeUrl) { URL.revokeObjectURL(beforeUrl); beforeUrl = ""; }
+        if (dropPrev) { dropPrev.removeAttribute("src"); dropPrev.hidden = true; }
         if (gifNote) gifNote.hidden = kind !== "gif";
         if (input && f !== input.files?.[0]) {
             try {
@@ -198,9 +200,17 @@ pub fn compressor() -> View {
                 if (!url) url = URL.createObjectURL(f);
                 if (beforeUrl) URL.revokeObjectURL(beforeUrl);
                 beforeUrl = url;
+                if (dropPrev && url) {
+                    dropPrev.src = url;
+                    dropPrev.hidden = false;
+                }
             } catch (_) {
                 if (gen !== previewGen) return;
                 try { beforeUrl = URL.createObjectURL(f); } catch (__) { beforeUrl = ""; }
+                if (dropPrev && beforeUrl) {
+                    dropPrev.src = beforeUrl;
+                    dropPrev.hidden = false;
+                }
             }
         })();
     };
@@ -232,6 +242,7 @@ pub fn compressor() -> View {
         pick(e.dataTransfer?.files?.[0]);
     });
     input?.addEventListener("change", () => pick(input.files?.[0]));
+    if (input?.files?.[0]) pick(input.files[0]);
     kb?.addEventListener("input", syncPresets);
     formatEl?.addEventListener("change", syncFormatHint);
     root.querySelectorAll("[data-preset]").forEach((btn) => {
@@ -333,6 +344,7 @@ pub fn compressor() -> View {
                         type="file"
                         accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,.heic,.heif"
                     />
+                    <img class="drop-preview" data-drop-preview="" alt="" hidden="" />
                     <span class="drop-title">"Drop an image, or click to choose"</span>
                     <span class="drop-hint" data-filename="">"JPG, PNG, WebP, GIF, HEIC · max 20 MB"</span>
                 </label>
