@@ -180,6 +180,7 @@
       drop?.classList.add("has-file");
       setError("");
       syncFormatHint();
+      syncPresets();
       const gen = ++previewGen;
       (async () => {
         try {
@@ -214,10 +215,32 @@
         }
       })();
     };
+    const maxTargetKb = () => {
+      if (!file) return 5120;
+      return Math.max(8, Math.floor((file.size - 1) / 1024));
+    };
     const syncPresets = () => {
-      const v = String(kb?.value || "200");
-      root.querySelectorAll("[data-preset]").forEach((b) => {
-        b.classList.toggle("is-on", b.getAttribute("data-preset") === v);
+      const cap = maxTargetKb();
+      const buttons = root.querySelectorAll("[data-preset]");
+      buttons.forEach((b) => {
+        const n = Number(b.getAttribute("data-preset"));
+        const tooBig = !!file && Number.isFinite(n) && n * 1024 >= file.size;
+        b.hidden = tooBig;
+      });
+      if (kb) {
+        kb.max = String(cap);
+        let v = Number(kb.value || 200);
+        if (!Number.isFinite(v) || v > cap) {
+          const allowed = [...buttons]
+            .filter((b) => !b.hidden)
+            .map((b) => Number(b.getAttribute("data-preset")))
+            .filter((n) => Number.isFinite(n) && n <= cap);
+          kb.value = String(allowed.length ? Math.max(...allowed) : cap);
+        }
+      }
+      const on = String(kb?.value || "200");
+      buttons.forEach((b) => {
+        b.classList.toggle("is-on", !b.hidden && b.getAttribute("data-preset") === on);
       });
     };
     const busy = (on, label) => {
@@ -245,12 +268,13 @@
     if (input?.files?.[0]) pick(input.files[0]);
     kb?.addEventListener("input", syncPresets);
     formatEl?.addEventListener("change", syncFormatHint);
-    root.querySelectorAll("[data-preset]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        if (kb) kb.value = btn.getAttribute("data-preset") || "200";
-        syncPresets();
+      root.querySelectorAll("[data-preset]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          if (btn.hidden) return;
+          if (kb) kb.value = btn.getAttribute("data-preset") || "200";
+          syncPresets();
+        });
       });
-    });
 
     form?.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -260,6 +284,8 @@
       if (!Number.isFinite(target)) target = 200;
       if (target < 8) target = 8;
       if (target > 5120) target = 5120;
+      const cap = maxTargetKb();
+      if (target > cap) target = cap;
       if (kb && Number(kb.value) !== target) kb.value = String(target);
       syncPresets();
       const fmt = root.querySelector("[data-format]")?.value || "jpeg";

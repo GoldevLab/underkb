@@ -110,7 +110,7 @@ fn seo_kit() -> SeoKit {
 async fn main() -> std::io::Result<()> {
     let kit = seo_kit();
     let head = format!(
-        "{}<link rel=\"icon\" href=\"/icon.svg\" type=\"image/svg+xml\" /><script type=\"module\" src=\"/js/underkb.js?v=2\"></script>",
+        "{}<link rel=\"icon\" href=\"/icon.svg\" type=\"image/svg+xml\" /><script type=\"module\" src=\"/js/underkb.js?v=3\"></script>",
         kit.head_extras()
     );
     let json_ld = serde_json::to_string(&kit.json_ld_blocks).unwrap_or_else(|_| "[]".into());
