@@ -2,6 +2,8 @@
 
 mod api;
 mod compress;
+mod landing;
+mod ops;
 mod pages;
 mod stage;
 mod tool;
@@ -21,6 +23,7 @@ fn chrome(body: View) -> View {
                         <span class="brand-mark" aria-hidden="true">"kB"</span>
                         <span class="brand-name">"UnderKb"</span>
                     </NavLink>
+                    {tool::tools_nav()}
                     <span class="nav-progress" aria-hidden="true"></span>
                 </div>
             </header>
@@ -28,7 +31,7 @@ fn chrome(body: View) -> View {
             <footer class="site-footer">
                 <p>
                     <strong>"UnderKb"</strong>
-                    " — compress images to a kilobyte budget. Processed in memory. No account."
+                    " — image tools: compress to a KB budget, JPG→WebP, resize, flat background, color palette. No account."
                 </p>
             </footer>
         </div>
@@ -56,12 +59,12 @@ fn seo_kit() -> SeoKit {
     let mut kit = SeoKit::new("UnderKb", "https://underkb.fly.dev")
         .with_locale("en_US")
         .with_keywords(
-            "compress image to 200kb, compress jpg to 200kb, compress png, reduce image size, \
-             image compressor, compress webp, image under 100kb, compress photo for web",
+            "compress image to 200kb, comprimir imagen kb, convertir jpg a webp, redimensionar imagen, \
+             quitar fondo, extraer colores imagen, image compressor, compress jpg to 200kb",
         )
         .with_llms_summary(
-            "UnderKb compresses a JPG, PNG, WebP, or GIF so the file is under a kilobyte \
-             budget you choose (default 200 KB). Quality first, then scale. No account.",
+            "UnderKb compresses a JPG, PNG, WebP, or GIF under a kilobyte budget (default 200 KB). \
+             Also: convert JPG to WebP, resize, remove a flat background, extract a color palette. No account.",
         )
         .with_default_json_ld()
         .push_json_ld(json!({
@@ -101,7 +104,7 @@ fn seo_kit() -> SeoKit {
     kit.author = "UnderKb".into();
     kit.llms_sections = vec![(
         "How to use".into(),
-        "POST /api/compress multipart: file, target_kb (default 200), format (jpeg|webp|png).".into(),
+        "POST /api/compress file,target_kb,format. /api/convert format,quality. /api/resize width,height,mode. /api/remove-bg tolerance. /api/colors count.".into(),
     )];
     kit
 }
@@ -110,7 +113,7 @@ fn seo_kit() -> SeoKit {
 async fn main() -> std::io::Result<()> {
     let kit = seo_kit();
     let head = format!(
-        "{}<link rel=\"icon\" href=\"/icon.svg\" type=\"image/svg+xml\" /><script type=\"module\" src=\"/js/underkb.js?v=3\"></script>",
+        "{}<link rel=\"icon\" href=\"/icon.svg\" type=\"image/svg+xml\" /><script type=\"module\" src=\"/js/underkb.js?v=5\"></script>",
         kit.head_extras()
     );
     let json_ld = serde_json::to_string(&kit.json_ld_blocks).unwrap_or_else(|_| "[]".into());
@@ -133,6 +136,10 @@ async fn main() -> std::io::Result<()> {
         .with_public_dir(public)
         .without_pwa()
         .route("/api/compress", post(api::compress_upload).options(api::preflight))
+        .route("/api/convert", post(api::convert_upload).options(api::preflight))
+        .route("/api/resize", post(api::resize_upload).options(api::preflight))
+        .route("/api/remove-bg", post(api::remove_bg_upload).options(api::preflight))
+        .route("/api/colors", post(api::colors_upload).options(api::preflight))
         .route("/d/{id}", get(api::download))
         .not_found(not_found)
         .auto_pages(

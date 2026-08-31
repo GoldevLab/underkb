@@ -54,6 +54,32 @@ pub fn page(_req: FlowRequest) -> View {
                 </ul>
             </section>
 
+            <section class="features" aria-labelledby="more-en">
+                <h2 id="more-en">"More image tools"</h2>
+                <ul class="feature-grid">
+                    <li>
+                        <h3><NavLink href="/comprimir-imagen-kb">"Comprimir imagen a KB"</NavLink></h3>
+                        <p>"Same compressor, Spanish page — pick 50, 200, or 500 KB."</p>
+                    </li>
+                    <li>
+                        <h3><NavLink href="/convertir-jpg-a-webp">"Convert JPG to WebP"</NavLink></h3>
+                        <p>"Adjustable quality. PNG and JPG export too."</p>
+                    </li>
+                    <li>
+                        <h3><NavLink href="/redimensionar-imagen">"Resize an image"</NavLink></h3>
+                        <p>"Width, height, fit or crop. Max 4096 px on the long edge."</p>
+                    </li>
+                    <li>
+                        <h3><NavLink href="/quitar-fondo">"Remove a flat background"</NavLink></h3>
+                        <p>"Studio white or a solid backdrop → transparent PNG. Not a portrait AI matte."</p>
+                    </li>
+                    <li>
+                        <h3><NavLink href="/extraer-colores-imagen">"Extract image colors"</NavLink></h3>
+                        <p>"HEX palette with approximate share of the photo."</p>
+                    </li>
+                </ul>
+            </section>
+
             <section class="faq" aria-labelledby="faq-title">
                 <h2 id="faq-title">"FAQ"</h2>
                 <div class="faq-list">

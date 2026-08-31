@@ -13,8 +13,8 @@ use image::{
 pub const MAX_UPLOAD_BYTES: usize = 20 * 1024 * 1024;
 pub const MIN_TARGET_BYTES: usize = 8 * 1024;
 pub const MAX_TARGET_BYTES: usize = 5 * 1024 * 1024;
-const MAX_EDGE: u32 = 4096;
-const MAX_PIXELS: u64 = 12_000_000;
+pub(crate) const MAX_EDGE: u32 = 4096;
+pub(crate) const MAX_PIXELS: u64 = 12_000_000;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum OutFormat {
@@ -50,6 +50,22 @@ impl OutFormat {
 
     fn lossy(self) -> bool {
         matches!(self, Self::Jpeg)
+    }
+
+    pub fn parse_prefer_webp(raw: &str) -> Self {
+        match raw.trim().to_ascii_lowercase().as_str() {
+            "jpeg" | "jpg" => Self::Jpeg,
+            "png" => Self::Png,
+            _ => Self::Webp,
+        }
+    }
+
+    pub fn parse_prefer_png(raw: &str) -> Self {
+        match raw.trim().to_ascii_lowercase().as_str() {
+            "jpeg" | "jpg" => Self::Jpeg,
+            "webp" => Self::Webp,
+            _ => Self::Png,
+        }
     }
 }
 
@@ -220,6 +236,22 @@ fn looks_like_avif(input: &[u8]) -> bool {
         && matches!(&input[8..12], b"avif" | b"avis")
 }
 
+pub(crate) fn decode_capped(input: &[u8]) -> Result<(DynamicImage, u32, u32), String> {
+    if input.is_empty() {
+        return Err("Empty file.".into());
+    }
+    if input.len() > MAX_UPLOAD_BYTES {
+        return Err("File is over 20 MB. Pick a smaller image.".into());
+    }
+    reject_unsupported(input)?;
+    let img = load_oriented(input)?;
+    let (ow, oh) = img.dimensions();
+    if ow == 0 || oh == 0 {
+        return Err("That image has no pixels.".into());
+    }
+    Ok((cap_dimensions(img), ow, oh))
+}
+
 fn load_oriented(input: &[u8]) -> Result<DynamicImage, String> {
     let mut reader = ImageReader::new(Cursor::new(input))
         .with_guessed_format()
@@ -275,11 +307,23 @@ fn cap_dimensions(img: DynamicImage) -> DynamicImage {
     img.resize(nw, nh, FilterType::Triangle)
 }
 
-fn encode(img: &DynamicImage, format: OutFormat, quality: u8) -> Result<Vec<u8>, String> {
+pub(crate) fn encode(img: &DynamicImage, format: OutFormat, quality: u8) -> Result<Vec<u8>, String> {
     match format {
         OutFormat::Jpeg => encode_jpeg(img, quality),
         OutFormat::Png => encode_png(img),
-        OutFormat::Webp => encode_webp(img),
+        OutFormat::Webp => encode_webp_lossless(img),
+    }
+}
+
+pub(crate) fn encode_with_quality(
+    img: &DynamicImage,
+    format: OutFormat,
+    quality: u8,
+) -> Result<Vec<u8>, String> {
+    match format {
+        OutFormat::Jpeg => encode_jpeg(img, quality),
+        OutFormat::Png => encode_png(img),
+        OutFormat::Webp => encode_webp_quality(img, quality),
     }
 }
 
@@ -331,7 +375,14 @@ fn encode_png(img: &DynamicImage) -> Result<Vec<u8>, String> {
     Ok(out)
 }
 
-fn encode_webp(img: &DynamicImage) -> Result<Vec<u8>, String> {
+fn encode_webp_quality(img: &DynamicImage, quality: u8) -> Result<Vec<u8>, String> {
+    if quality >= 98 {
+        return encode_webp_lossless(img);
+    }
+    encode_webp_lossy(img, quality)
+}
+
+fn encode_webp_lossless(img: &DynamicImage) -> Result<Vec<u8>, String> {
     use image::codecs::webp::WebPEncoder;
     let mut out = Vec::new();
     let enc = WebPEncoder::new_lossless(&mut out);
@@ -353,6 +404,19 @@ fn encode_webp(img: &DynamicImage) -> Result<Vec<u8>, String> {
             ColorType::Rgb8.into(),
         )
         .map_err(|e| e.to_string())?;
+    }
+    Ok(out)
+}
+
+/// Lossy VP8 via libwebp. Falls back to lossless if the encoder is unavailable.
+fn encode_webp_lossy(img: &DynamicImage, quality: u8) -> Result<Vec<u8>, String> {
+    let q = quality.clamp(1, 100) as f32;
+    let rgba = img.to_rgba8();
+    let encoder = webp::Encoder::from_rgba(rgba.as_raw(), rgba.width(), rgba.height());
+    let mem = encoder.encode(q);
+    let out = Vec::from(&*mem);
+    if out.len() < 12 || &out[..4] != b"RIFF" {
+        return encode_webp_lossless(img);
     }
     Ok(out)
 }
