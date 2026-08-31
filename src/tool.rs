@@ -43,6 +43,7 @@ fn result_block(before: &'static str, after: &'static str, download: &'static st
     }
 }
 
+#[allow(dead_code)]
 pub fn compressor() -> View {
     view! {
         <div id="ukb-app" data-tool="compress" data-endpoint="/api/compress" data-idle="Compress" data-busy="Compressing…" data-empty="Drop or choose an image first.">
@@ -302,7 +303,7 @@ pub fn palette() -> View {
 pub fn tools_nav() -> View {
     view! {
         <nav class="tool-nav" aria-label="Herramientas">
-            <NavLink href="/" class="tool-nav-link" activeClass="is-active" exact=true>"200 KB"</NavLink>
+            <NavLink href="/" class="tool-nav-link" activeClass="is-active" exact=true>"Inicio"</NavLink>
             <NavLink href="/comprimir-imagen-kb" class="tool-nav-link" activeClass="is-active">"Comprimir"</NavLink>
             <NavLink href="/convertir-jpg-a-webp" class="tool-nav-link" activeClass="is-active">"JPG→WebP"</NavLink>
             <NavLink href="/redimensionar-imagen" class="tool-nav-link" activeClass="is-active">"Redimensionar"</NavLink>

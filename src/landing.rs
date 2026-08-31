@@ -15,7 +15,7 @@ pub enum Tool {
 }
 
 impl Tool {
-    fn path(self) -> &'static str {
+    pub fn path(self) -> &'static str {
         match self {
             Self::Compress => "/comprimir-imagen-kb",
             Self::Convert => "/convertir-jpg-a-webp",
@@ -125,6 +125,40 @@ impl Tool {
         }
     }
 
+    pub fn card_mark(self) -> &'static str {
+        match self {
+            Self::Compress => "kB",
+            Self::Convert => "W",
+            Self::Resize => "↔",
+            Self::RemoveBg => "✂",
+            Self::Colors => "#",
+        }
+    }
+
+    pub fn card_title(self) -> &'static str {
+        match self {
+            Self::Compress => "Comprimir a KB",
+            Self::Convert => "JPG a WebP",
+            Self::Resize => "Redimensionar",
+            Self::RemoveBg => "Quitar fondo",
+            Self::Colors => "Extraer colores",
+        }
+    }
+
+    pub fn card_blurb(self) -> &'static str {
+        match self {
+            Self::Compress => "Baja la foto a 50, 200 o 500 KB. Calidad primero, luego escala.",
+            Self::Convert => "Pasa JPG o PNG a WebP (o al revés). Ajustas la calidad.",
+            Self::Resize => "Cambia ancho y alto. Encajar, recortar o estirar.",
+            Self::RemoveBg => "Fondo blanco o liso → PNG transparente. No es recorte de retrato.",
+            Self::Colors => "Paleta HEX con un porcentaje aproximado. Copia los códigos.",
+        }
+    }
+
+    pub fn card_cta(self) -> &'static str {
+        "Abrir herramienta"
+    }
+
     fn faq(self) -> &'static [(&'static str, &'static str)] {
         match self {
             Self::Compress => &[
@@ -216,14 +250,17 @@ pub fn page(tool: Tool) -> View {
                 <p class="hero-lead">{tool.lead()}</p>
                 {form}
             </section>
+            {crate::ads::slot("landing-hero", "infeed")}
             <section class="howto" aria-labelledby="howto-title">
                 <h2 id="howto-title">"Cómo usarlo"</h2>
                 <ol class="howto-grid">{howto}</ol>
             </section>
+            {crate::ads::slot("landing-mid", "infeed")}
             <section class="faq" aria-labelledby="faq-title">
                 <h2 id="faq-title">"Preguntas"</h2>
                 <div class="faq-list">{faq}</div>
             </section>
+            {crate::ads::slot("landing-faq", "infeed")}
             <section class="features" aria-labelledby="more-title">
                 <h2 id="more-title">"Otras herramientas"</h2>
                 <ul class="feature-grid">{more}</ul>

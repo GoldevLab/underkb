@@ -1,5 +1,6 @@
 //! UnderKb — compress images under a kilobyte budget (Resuma Flow).
 
+mod ads;
 mod api;
 mod compress;
 mod landing;
@@ -28,12 +29,18 @@ fn chrome(body: View) -> View {
                 </div>
             </header>
             {body}
+            <div class="ad-rail">
+                {crate::ads::slot("footer", "leaderboard")}
+            </div>
             <footer class="site-footer">
                 <p>
                     <strong>"UnderKb"</strong>
-                    " — image tools: compress to a KB budget, JPG→WebP, resize, flat background, color palette. No account."
+                    " — herramientas de imagen, sin cuenta. Elige una en el inicio."
                 </p>
             </footer>
+            <div class="ad-rail ad-rail-end">
+                {crate::ads::slot("anchor", "leaderboard")}
+            </div>
         </div>
     }
 }
@@ -49,8 +56,9 @@ fn not_found() -> View {
             <h1>"Page not found"</h1>
             <p class="hero-lead">"That path does not exist on UnderKb."</p>
             <p>
-                <NavLink href="/" class="btn btn-primary">"Compress an image"</NavLink>
+                <NavLink href="/" class="btn btn-primary">"Ir al inicio"</NavLink>
             </p>
+            {crate::ads::slot("notfound-mid", "infeed")}
         </main>
     })
 }
@@ -122,9 +130,9 @@ async fn main() -> std::io::Result<()> {
     let public = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("public");
 
     FlowApp::new()
-        .with_title("Compress Image to 200KB — Free JPG & WebP Under Any Size | UnderKb")
+        .with_title("UnderKb — comprimir, convertir, redimensionar y más")
         .with_description(
-            "Compress a photo under 200 KB — or any size you set. JPG, WebP, PNG. Up to 20 MB. No account, no watermark.",
+            "Herramientas de imagen gratis: comprimir a KB, JPG a WebP, redimensionar, quitar fondo liso y paleta HEX. Sin cuenta.",
         )
         .with_site_url("https://underkb.fly.dev")
         .with_og_image("/cover.png")

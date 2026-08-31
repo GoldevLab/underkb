@@ -1,110 +1,85 @@
 use resuma::prelude::*;
 
-use crate::tool::compressor;
+use crate::landing::Tool;
 
 pub fn page(_req: FlowRequest) -> View {
-    view! {
-        <main class="home-page">
-            <section class="hero">
-                <p class="eyebrow">"Image compressor"</p>
-                <h1>"Compress an image under 200 KB"</h1>
-                <p class="hero-lead">
-                    "Set any size — 50 KB, 200 KB, 1 MB. JPG, WebP, or PNG. Photos up to 20 MB. No account, no watermark."
-                </p>
-                {compressor()}
-            </section>
+    let cards: Vec<View> = [
+        Tool::Compress,
+        Tool::Convert,
+        Tool::Resize,
+        Tool::RemoveBg,
+        Tool::Colors,
+    ]
+    .into_iter()
+    .map(tool_card)
+    .collect();
 
+    view! {
+        <main class="home-page home-hub" lang="es">
+            <section class="hero">
+                <p class="eyebrow">"Herramientas de imagen"</p>
+                <h1>"¿Qué quieres hacer con tu foto?"</h1>
+                <p class="hero-lead">
+                    "Elige una herramienta. Subes el archivo ahí, sin cuenta ni marca de agua. Hasta 20 MB."
+                </p>
+            </section>
+            {crate::ads::slot("home-hero", "infeed")}
+            <section class="tool-pick" aria-labelledby="tools-title">
+                <h2 id="tools-title">"Herramientas"</h2>
+                <div class="tool-grid">{cards}</div>
+            </section>
+            {crate::ads::slot("home-mid", "infeed")}
             <section class="howto" aria-labelledby="howto-title">
-                <h2 id="howto-title">"How to compress an image to a size"</h2>
+                <h2 id="howto-title">"Cómo va"</h2>
                 <ol class="howto-grid">
                     <li>
-                        <h3>"Drop the file"</h3>
-                        <p>"JPG, PNG, WebP, GIF, or HEIC (Safari converts HEIC). Up to 20 MB. Phone photos and screenshots both work."</p>
+                        <h3>"Elige"</h3>
+                        <p>"Comprimir a un tamaño, pasar a WebP, cambiar medidas, quitar un fondo liso o sacar colores."</p>
                     </li>
                     <li>
-                        <h3>"Pick a budget"</h3>
-                        <p>"200 KB is the default for web and email. 50 KB for thumbnails. 500 KB if you still want print-ish detail."</p>
+                        <h3>"Suelta la imagen"</h3>
+                        <p>"JPG, PNG, WebP o GIF. En el teléfono también puedes elegir de la galería."</p>
                     </li>
                     <li>
-                        <h3>"Download"</h3>
-                        <p>"JPEG quality first, then scale if needed. WebP here is lossless (good for graphics, often larger than JPG for photos). You get a before/after preview and a file that aims at your budget."</p>
+                        <h3>"Descarga"</h3>
+                        <p>"El archivo queda unos 30 minutos para bajarlo. No guardamos una galería tuya."</p>
                     </li>
                 </ol>
             </section>
-
-            <section class="features" aria-labelledby="why-title">
-                <h2 id="why-title">"Why UnderKb instead of a generic compressor"</h2>
-                <ul class="feature-grid">
-                    <li>
-                        <h3>"A real byte target"</h3>
-                        <p>"Most tools only expose a quality slider. UnderKb keeps going until the file is under the KB you asked for — and tells you if it cannot quite get there."</p>
-                    </li>
-                    <li>
-                        <h3>"Web-ready formats"</h3>
-                        <p>"JPEG for photos, lossless WebP for graphics, PNG when you still need transparency (it may need a smaller canvas)."</p>
-                    </li>
-                    <li>
-                        <h3>"No sign-up"</h3>
-                        <p>"Compress, download, done. We do not keep a gallery of your pictures."</p>
-                    </li>
-                    <li>
-                        <h3>"Built for Fly"</h3>
-                        <p>"One Rust binary. No Node image farm. Same stack as a serious micro SaaS, not a PHP upload form from 2012."</p>
-                    </li>
-                </ul>
-            </section>
-
-            <section class="features" aria-labelledby="more-en">
-                <h2 id="more-en">"More image tools"</h2>
-                <ul class="feature-grid">
-                    <li>
-                        <h3><NavLink href="/comprimir-imagen-kb">"Comprimir imagen a KB"</NavLink></h3>
-                        <p>"Same compressor, Spanish page — pick 50, 200, or 500 KB."</p>
-                    </li>
-                    <li>
-                        <h3><NavLink href="/convertir-jpg-a-webp">"Convert JPG to WebP"</NavLink></h3>
-                        <p>"Adjustable quality. PNG and JPG export too."</p>
-                    </li>
-                    <li>
-                        <h3><NavLink href="/redimensionar-imagen">"Resize an image"</NavLink></h3>
-                        <p>"Width, height, fit or crop. Max 4096 px on the long edge."</p>
-                    </li>
-                    <li>
-                        <h3><NavLink href="/quitar-fondo">"Remove a flat background"</NavLink></h3>
-                        <p>"Studio white or a solid backdrop → transparent PNG. Not a portrait AI matte."</p>
-                    </li>
-                    <li>
-                        <h3><NavLink href="/extraer-colores-imagen">"Extract image colors"</NavLink></h3>
-                        <p>"HEX palette with approximate share of the photo."</p>
-                    </li>
-                </ul>
-            </section>
-
+            {crate::ads::slot("home-faq", "infeed")}
             <section class="faq" aria-labelledby="faq-title">
-                <h2 id="faq-title">"FAQ"</h2>
+                <h2 id="faq-title">"Preguntas"</h2>
                 <div class="faq-list">
                     <details>
-                        <summary>"Can I compress a JPG to 200 KB?"</summary>
-                        <p>"Yes. 200 KB is the default. Change the box or tap a chip (50, 100, 200, 500, 1024)."</p>
+                        <summary>"¿Hay que registrarse?"</summary>
+                        <p>"No. Entras, eliges la herramienta, subes y descargas."</p>
                     </details>
                     <details>
-                        <summary>"Does this work on PNG and WebP too?"</summary>
-                        <p>"Yes. Input: JPG, PNG, WebP, GIF (first frame), and HEIC in browsers that can decode it. Output: JPG, lossless WebP, or PNG."</p>
+                        <summary>"¿Dónde comprimo a 200 KB?"</summary>
+                        <p>"En Comprimir a KB. 200 KB es el valor por defecto."</p>
                     </details>
                     <details>
-                        <summary>"Will you store my image?"</summary>
-                        <p>"We keep the result in memory for about 30 minutes so you can download it, then it expires. We do not build a user library."</p>
-                    </details>
-                    <details>
-                        <summary>"Why did the image get smaller in pixels?"</summary>
-                        <p>"If quality alone cannot hit the budget, we scale the longest edge down. Tiny budgets on huge phone photos need that."</p>
-                    </details>
-                    <details>
-                        <summary>"Is there a file size limit?"</summary>
-                        <p>"20 MB upload. Huge photos are resized in the browser first. Very large megapixel images are capped on the server so it stays fast."</p>
+                        <summary>"¿Quitar fondo sirve para retratos?"</summary>
+                        <p>"Solo fondos lisos (estudio, blanco). No es un recorte de personas por IA."</p>
                     </details>
                 </div>
             </section>
         </main>
+    }
+}
+
+fn tool_card(tool: Tool) -> View {
+    let href = tool.path();
+    let mark = tool.card_mark();
+    let title = tool.card_title();
+    let blurb = tool.card_blurb();
+    let cta = tool.card_cta();
+    view! {
+        <NavLink href={href} class="tool-card">
+            <span class="tool-card-mark" aria-hidden="true">{mark}</span>
+            <h3 class="tool-card-title">{title}</h3>
+            <p class="tool-card-blurb">{blurb}</p>
+            <span class="tool-card-cta">{cta}</span>
+        </NavLink>
     }
 }
