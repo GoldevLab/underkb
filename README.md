@@ -10,8 +10,8 @@ RESUMA_CSP=0 RESUMA_BODY_LIMIT=26214400 cargo run
 
 | Path | Tool |
 |---|---|
-| `/` | Compress to KB (English) |
-| `/comprimir-imagen-kb` | Comprimir a KB |
+| `/` | Hub — pick a tool |
+| `/comprimir-imagen-kb` | Compress to KB |
 | `/convertir-jpg-a-webp` | Convert to WebP/JPG/PNG |
 | `/redimensionar-imagen` | Resize |
 | `/quitar-fondo` | Remove a flat background |

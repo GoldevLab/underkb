@@ -35,7 +35,7 @@ fn chrome(body: View) -> View {
             <footer class="site-footer">
                 <p>
                     <strong>"UnderKb"</strong>
-                    " — herramientas de imagen, sin cuenta. Elige una en el inicio."
+                    " — image tools, no account. Pick one from the home page."
                 </p>
             </footer>
             <div class="ad-rail ad-rail-end">
@@ -56,7 +56,7 @@ fn not_found() -> View {
             <h1>"Page not found"</h1>
             <p class="hero-lead">"That path does not exist on UnderKb."</p>
             <p>
-                <NavLink href="/" class="btn btn-primary">"Ir al inicio"</NavLink>
+                <NavLink href="/" class="btn btn-primary">"Go home"</NavLink>
             </p>
             {crate::ads::slot("notfound-mid", "infeed")}
         </main>
@@ -121,7 +121,7 @@ fn seo_kit() -> SeoKit {
 async fn main() -> std::io::Result<()> {
     let kit = seo_kit();
     let head = format!(
-        "{}<link rel=\"icon\" href=\"/icon.svg\" type=\"image/svg+xml\" /><script type=\"module\" src=\"/js/underkb.js?v=5\"></script>",
+        "{}<link rel=\"icon\" href=\"/icon.svg\" type=\"image/svg+xml\" /><script type=\"module\" src=\"/js/underkb.js?v=6\"></script>",
         kit.head_extras()
     );
     let json_ld = serde_json::to_string(&kit.json_ld_blocks).unwrap_or_else(|_| "[]".into());
@@ -130,9 +130,9 @@ async fn main() -> std::io::Result<()> {
     let public = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("public");
 
     FlowApp::new()
-        .with_title("UnderKb — comprimir, convertir, redimensionar y más")
+        .with_title("UnderKb — compress, convert, resize, and more")
         .with_description(
-            "Herramientas de imagen gratis: comprimir a KB, JPG a WebP, redimensionar, quitar fondo liso y paleta HEX. Sin cuenta.",
+            "Free image tools: compress to KB, JPG to WebP, resize, remove a flat background, HEX palette. No account.",
         )
         .with_site_url("https://underkb.fly.dev")
         .with_og_image("/cover.png")
@@ -142,7 +142,38 @@ async fn main() -> std::io::Result<()> {
         .static_asset("/llms.txt", llms, "text/plain; charset=utf-8")
         .static_asset("/icon.svg", ICON, "image/svg+xml")
         .with_public_dir(public)
-        .without_pwa()
+        .with_pwa(FlowPwaConfig {
+            name: "UnderKb".into(),
+            short_name: "UnderKb".into(),
+            description: "Compress to KB, convert, resize, remove a flat background, HEX palette."
+                .into(),
+            theme_color: "#0d9488".into(),
+            background_color: "#0b1211".into(),
+            start_url: "/".into(),
+            scope: "/".into(),
+            cache_version: "ukb-1".into(),
+            display: "standalone".into(),
+            orientation: "any".into(),
+            lang: "en".into(),
+            icon_char: Some("k".into()),
+            precache_paths: vec!["/css/underkb.css".into(), "/js/underkb.js".into()],
+            shortcuts: vec![
+                PwaShortcut {
+                    name: "Home".into(),
+                    short_name: "Home".into(),
+                    url: "/".into(),
+                },
+                PwaShortcut {
+                    name: "Compress to KB".into(),
+                    short_name: "Compress".into(),
+                    url: "/comprimir-imagen-kb".into(),
+                },
+            ],
+            offline_title: "You're offline".into(),
+            offline_message:
+                "UnderKb needs a connection to process images. Reconnect and try again.".into(),
+            manifest_icons: Vec::new(),
+        })
         .route("/api/compress", post(api::compress_upload).options(api::preflight))
         .route("/api/convert", post(api::convert_upload).options(api::preflight))
         .route("/api/resize", post(api::resize_upload).options(api::preflight))

@@ -16,8 +16,8 @@ fn dropzone(title: &'static str, hint: &'static str) -> View {
             <span class="drop-title">{title}</span>
             <span class="drop-hint" data-filename="">{hint}</span>
         </label>
-        <p class="hint" data-gif="" hidden="">"Los GIF animados: solo el primer fotograma."</p>
-        <p class="hint" data-format-hint="" hidden="">"En fotos, JPG suele cumplir el límite. WebP/PNG sin pérdida pueden quedar grandes."</p>
+        <p class="hint" data-gif="" hidden="">"Animated GIFs: we keep the first frame only."</p>
+        <p class="hint" data-format-hint="" hidden="">"JPG usually hits the budget on photos. Lossless WebP/PNG can stay huge."</p>
     }
 }
 
@@ -43,7 +43,6 @@ fn result_block(before: &'static str, after: &'static str, download: &'static st
     }
 }
 
-#[allow(dead_code)]
 pub fn compressor() -> View {
     view! {
         <div id="ukb-app" data-tool="compress" data-endpoint="/api/compress" data-idle="Compress" data-busy="Compressing…" data-empty="Drop or choose an image first.">
@@ -102,63 +101,17 @@ pub fn compressor() -> View {
     }
 }
 
-pub fn compressor_es() -> View {
-    view! {
-        <div id="ukb-app" data-tool="compress" data-endpoint="/api/compress" data-idle="Comprimir" data-busy="Comprimiendo…" data-empty="Suelta o elige una imagen primero.">
-            <form class="hero-form" data-form="" method="post" action="/api/compress" enctype="multipart/form-data">
-                {dropzone(
-                    "Suelta una imagen, o pulsa para elegir",
-                    "JPG, PNG, WebP, GIF, HEIC · máx. 20 MB",
-                )}
-                <div class="controls">
-                    <label>
-                        "Tamaño objetivo (KB)"
-                        <input
-                            data-kb=""
-                            name="target_kb"
-                            type="number"
-                            min="8"
-                            max="5120"
-                            value="200"
-                            inputmode="numeric"
-                            enterkeyhint="done"
-                        />
-                    </label>
-                    <label>
-                        "Salida"
-                        <select data-format="" name="format">
-                            <option value="jpeg" selected=true>"JPG"</option>
-                            <option value="webp">"WebP (sin pérdida)"</option>
-                            <option value="png">"PNG"</option>
-                        </select>
-                    </label>
-                </div>
-                <div class="presets" role="group" aria-label="Tamaños">
-                    <button type="button" class="btn btn-ghost" data-preset="50">"50 KB"</button>
-                    <button type="button" class="btn btn-ghost" data-preset="100">"100 KB"</button>
-                    <button type="button" class="btn btn-ghost is-on" data-preset="200">"200 KB"</button>
-                    <button type="button" class="btn btn-ghost" data-preset="500">"500 KB"</button>
-                    <button type="button" class="btn btn-ghost" data-preset="1024">"1 MB"</button>
-                </div>
-                <p class="hint form-error" data-error="" hidden="" role="alert" aria-live="polite"></p>
-                <button type="submit" class="btn btn-primary btn-wide" data-submit="">"Comprimir"</button>
-            </form>
-            {result_block("Original", "Comprimida", "Descargar")}
-        </div>
-    }
-}
-
 pub fn converter() -> View {
     view! {
-        <div id="ukb-app" data-tool="convert" data-endpoint="/api/convert" data-idle="Convertir" data-busy="Convirtiendo…" data-empty="Suelta o elige una imagen primero.">
+        <div id="ukb-app" data-tool="convert" data-endpoint="/api/convert" data-idle="Convert" data-busy="Converting…" data-empty="Drop or choose an image first.">
             <form class="hero-form" data-form="" method="post" action="/api/convert" enctype="multipart/form-data">
                 {dropzone(
-                    "Suelta un JPG o PNG",
-                    "Salida por defecto: WebP · máx. 20 MB",
+                    "Drop a JPG or PNG",
+                    "Default output: WebP · max 20 MB",
                 )}
                 <div class="controls">
                     <label>
-                        "Formato"
+                        "Format"
                         <select data-format="" name="format">
                             <option value="webp" selected=true>"WebP"</option>
                             <option value="jpeg">"JPG"</option>
@@ -166,7 +119,7 @@ pub fn converter() -> View {
                         </select>
                     </label>
                     <label>
-                        "Calidad"
+                        "Quality"
                         <input
                             data-quality=""
                             name="quality"
@@ -178,45 +131,45 @@ pub fn converter() -> View {
                         />
                     </label>
                 </div>
-                <p class="hint">"80 es un buen WebP para fotos. 98 o más usa WebP sin pérdida."</p>
+                <p class="hint">"80 is a solid WebP for photos. 98 or higher uses lossless WebP."</p>
                 <p class="hint form-error" data-error="" hidden="" role="alert" aria-live="polite"></p>
-                <button type="submit" class="btn btn-primary btn-wide" data-submit="">"Convertir"</button>
+                <button type="submit" class="btn btn-primary btn-wide" data-submit="">"Convert"</button>
             </form>
-            {result_block("Original", "Convertida", "Descargar")}
+            {result_block("Original", "Converted", "Download")}
         </div>
     }
 }
 
 pub fn resizer() -> View {
     view! {
-        <div id="ukb-app" data-tool="resize" data-endpoint="/api/resize" data-idle="Redimensionar" data-busy="Redimensionando…" data-empty="Suelta o elige una imagen primero.">
+        <div id="ukb-app" data-tool="resize" data-endpoint="/api/resize" data-idle="Resize" data-busy="Resizing…" data-empty="Drop or choose an image first.">
             <form class="hero-form" data-form="" method="post" action="/api/resize" enctype="multipart/form-data">
                 {dropzone(
-                    "Suelta una imagen para cambiar el tamaño",
-                    "Un solo lado mantiene la proporción · máx. 20 MB",
+                    "Drop an image to resize",
+                    "One side keeps aspect ratio · max 20 MB",
                 )}
                 <p class="hint" data-dims="" hidden=""></p>
                 <div class="controls">
                     <label>
-                        "Ancho (px)"
-                        <input data-width="" name="width" type="number" min="1" max="4096" inputmode="numeric" placeholder="p. ej. 1200" />
+                        "Width (px)"
+                        <input data-width="" name="width" type="number" min="1" max="4096" inputmode="numeric" placeholder="e.g. 1200" />
                     </label>
                     <label>
-                        "Alto (px)"
+                        "Height (px)"
                         <input data-height="" name="height" type="number" min="1" max="4096" inputmode="numeric" placeholder="auto" />
                     </label>
                 </div>
                 <div class="controls">
                     <label>
-                        "Modo"
+                        "Mode"
                         <select data-mode="" name="mode">
-                            <option value="fit" selected=true>"Encajar (proporción)"</option>
-                            <option value="fill">"Rellenar y recortar"</option>
-                            <option value="stretch">"Estirar"</option>
+                            <option value="fit" selected=true>"Fit (keep aspect)"</option>
+                            <option value="fill">"Fill and crop"</option>
+                            <option value="stretch">"Stretch"</option>
                         </select>
                     </label>
                     <label>
-                        "Salida"
+                        "Output"
                         <select data-format="" name="format">
                             <option value="jpeg" selected=true>"JPG"</option>
                             <option value="webp">"WebP"</option>
@@ -225,24 +178,24 @@ pub fn resizer() -> View {
                     </label>
                 </div>
                 <p class="hint form-error" data-error="" hidden="" role="alert" aria-live="polite"></p>
-                <button type="submit" class="btn btn-primary btn-wide" data-submit="">"Redimensionar"</button>
+                <button type="submit" class="btn btn-primary btn-wide" data-submit="">"Resize"</button>
             </form>
-            {result_block("Original", "Redimensionada", "Descargar")}
+            {result_block("Original", "Resized", "Download")}
         </div>
     }
 }
 
 pub fn remover() -> View {
     view! {
-        <div id="ukb-app" data-tool="removebg" data-endpoint="/api/remove-bg" data-idle="Quitar fondo" data-busy="Recortando…" data-empty="Suelta o elige una imagen primero.">
+        <div id="ukb-app" data-tool="removebg" data-endpoint="/api/remove-bg" data-idle="Remove background" data-busy="Cutting…" data-empty="Drop or choose an image first.">
             <form class="hero-form" data-form="" method="post" action="/api/remove-bg" enctype="multipart/form-data">
                 {dropzone(
-                    "Suelta una foto con fondo liso",
-                    "Producto o captura sobre blanco o color uniforme",
+                    "Drop a photo with a flat backdrop",
+                    "Product shot or screenshot on white or a solid color",
                 )}
                 <div class="controls">
                     <label>
-                        "Tolerancia"
+                        "Tolerance"
                         <input
                             data-tolerance=""
                             name="tolerance"
@@ -254,33 +207,33 @@ pub fn remover() -> View {
                         />
                     </label>
                     <label>
-                        "Salida"
+                        "Output"
                         <select data-format="" name="format">
-                            <option value="png" selected=true>"PNG (transparencia)"</option>
+                            <option value="png" selected=true>"PNG (transparency)"</option>
                             <option value="webp">"WebP"</option>
                         </select>
                     </label>
                 </div>
-                <p class="hint">"Si queda halo, sube la tolerancia. Si se come el objeto, bájala."</p>
+                <p class="hint">"Raise tolerance if you still see a halo. Lower it if it eats the subject."</p>
                 <p class="hint form-error" data-error="" hidden="" role="alert" aria-live="polite"></p>
-                <button type="submit" class="btn btn-primary btn-wide" data-submit="">"Quitar fondo"</button>
+                <button type="submit" class="btn btn-primary btn-wide" data-submit="">"Remove background"</button>
             </form>
-            {result_block("Original", "Sin fondo", "Descargar PNG")}
+            {result_block("Original", "No background", "Download PNG")}
         </div>
     }
 }
 
 pub fn palette() -> View {
     view! {
-        <div id="ukb-app" data-tool="colors" data-endpoint="/api/colors" data-idle="Extraer colores" data-busy="Analizando…" data-empty="Suelta o elige una imagen primero.">
+        <div id="ukb-app" data-tool="colors" data-endpoint="/api/colors" data-idle="Extract colors" data-busy="Analyzing…" data-empty="Drop or choose an image first.">
             <form class="hero-form" data-form="" method="post" action="/api/colors" enctype="multipart/form-data">
                 {dropzone(
-                    "Suelta una imagen para ver su paleta",
-                    "JPG, PNG, WebP · máx. 20 MB",
+                    "Drop an image to see its palette",
+                    "JPG, PNG, WebP · max 20 MB",
                 )}
                 <div class="controls">
                     <label>
-                        "Colores"
+                        "Colors"
                         <input
                             data-count=""
                             name="count"
@@ -293,22 +246,22 @@ pub fn palette() -> View {
                     </label>
                 </div>
                 <p class="hint form-error" data-error="" hidden="" role="alert" aria-live="polite"></p>
-                <button type="submit" class="btn btn-primary btn-wide" data-submit="">"Extraer colores"</button>
+                <button type="submit" class="btn btn-primary btn-wide" data-submit="">"Extract colors"</button>
             </form>
-            {result_block("Original", "Paleta", "Copiar HEX")}
+            {result_block("Original", "Palette", "Copy HEX")}
         </div>
     }
 }
 
 pub fn tools_nav() -> View {
     view! {
-        <nav class="tool-nav" aria-label="Herramientas">
-            <NavLink href="/" class="tool-nav-link" activeClass="is-active" exact=true>"Inicio"</NavLink>
-            <NavLink href="/comprimir-imagen-kb" class="tool-nav-link" activeClass="is-active">"Comprimir"</NavLink>
+        <nav class="tool-nav" aria-label="Tools">
+            <NavLink href="/" class="tool-nav-link" activeClass="is-active" exact=true>"Home"</NavLink>
+            <NavLink href="/comprimir-imagen-kb" class="tool-nav-link" activeClass="is-active">"Compress"</NavLink>
             <NavLink href="/convertir-jpg-a-webp" class="tool-nav-link" activeClass="is-active">"JPG→WebP"</NavLink>
-            <NavLink href="/redimensionar-imagen" class="tool-nav-link" activeClass="is-active">"Redimensionar"</NavLink>
-            <NavLink href="/quitar-fondo" class="tool-nav-link" activeClass="is-active">"Quitar fondo"</NavLink>
-            <NavLink href="/extraer-colores-imagen" class="tool-nav-link" activeClass="is-active">"Colores"</NavLink>
+            <NavLink href="/redimensionar-imagen" class="tool-nav-link" activeClass="is-active">"Resize"</NavLink>
+            <NavLink href="/quitar-fondo" class="tool-nav-link" activeClass="is-active">"Remove bg"</NavLink>
+            <NavLink href="/extraer-colores-imagen" class="tool-nav-link" activeClass="is-active">"Colors"</NavLink>
         </nav>
     }
 }

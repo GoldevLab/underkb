@@ -15,52 +15,52 @@ pub fn page(_req: FlowRequest) -> View {
     .collect();
 
     view! {
-        <main class="home-page home-hub" lang="es">
+        <main class="home-page home-hub" lang="en">
             <section class="hero">
-                <p class="eyebrow">"Herramientas de imagen"</p>
-                <h1>"¿Qué quieres hacer con tu foto?"</h1>
+                <p class="eyebrow">"Image tools"</p>
+                <h1>"What do you want to do with your photo?"</h1>
                 <p class="hero-lead">
-                    "Elige una herramienta. Subes el archivo ahí, sin cuenta ni marca de agua. Hasta 20 MB."
+                    "Pick a tool, then drop the file there. No account, no watermark. Up to 20 MB."
                 </p>
             </section>
             {crate::ads::slot("home-hero", "infeed")}
             <section class="tool-pick" aria-labelledby="tools-title">
-                <h2 id="tools-title">"Herramientas"</h2>
+                <h2 id="tools-title">"Tools"</h2>
                 <div class="tool-grid">{cards}</div>
             </section>
             {crate::ads::slot("home-mid", "infeed")}
             <section class="howto" aria-labelledby="howto-title">
-                <h2 id="howto-title">"Cómo va"</h2>
+                <h2 id="howto-title">"How it works"</h2>
                 <ol class="howto-grid">
                     <li>
-                        <h3>"Elige"</h3>
-                        <p>"Comprimir a un tamaño, pasar a WebP, cambiar medidas, quitar un fondo liso o sacar colores."</p>
+                        <h3>"Pick a job"</h3>
+                        <p>"Compress to a size, convert to WebP, resize, cut a flat background, or pull a color palette."</p>
                     </li>
                     <li>
-                        <h3>"Suelta la imagen"</h3>
-                        <p>"JPG, PNG, WebP o GIF. En el teléfono también puedes elegir de la galería."</p>
+                        <h3>"Drop the image"</h3>
+                        <p>"JPG, PNG, WebP, or GIF. On a phone you can pick from the camera roll."</p>
                     </li>
                     <li>
-                        <h3>"Descarga"</h3>
-                        <p>"El archivo queda unos 30 minutos para bajarlo. No guardamos una galería tuya."</p>
+                        <h3>"Download"</h3>
+                        <p>"The file stays available for about 30 minutes. We do not keep a gallery of your pictures."</p>
                     </li>
                 </ol>
             </section>
             {crate::ads::slot("home-faq", "infeed")}
             <section class="faq" aria-labelledby="faq-title">
-                <h2 id="faq-title">"Preguntas"</h2>
+                <h2 id="faq-title">"FAQ"</h2>
                 <div class="faq-list">
                     <details>
-                        <summary>"¿Hay que registrarse?"</summary>
-                        <p>"No. Entras, eliges la herramienta, subes y descargas."</p>
+                        <summary>"Do I need an account?"</summary>
+                        <p>"No. Open a tool, upload, download."</p>
                     </details>
                     <details>
-                        <summary>"¿Dónde comprimo a 200 KB?"</summary>
-                        <p>"En Comprimir a KB. 200 KB es el valor por defecto."</p>
+                        <summary>"Where do I compress to 200 KB?"</summary>
+                        <p>"Compress to KB. 200 KB is the default target."</p>
                     </details>
                     <details>
-                        <summary>"¿Quitar fondo sirve para retratos?"</summary>
-                        <p>"Solo fondos lisos (estudio, blanco). No es un recorte de personas por IA."</p>
+                        <summary>"Does remove background work on portraits?"</summary>
+                        <p>"Only flat backdrops (studio, white). It is not an AI people matte."</p>
                     </details>
                 </div>
             </section>

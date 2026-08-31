@@ -277,7 +277,7 @@
         const btn = document.createElement("button");
         btn.type = "button";
         btn.className = "swatch";
-        btn.title = "Copiar " + c.hex;
+        btn.title = "Copy " + c.hex;
         const chip = document.createElement("span");
         chip.className = "swatch-chip";
         chip.style.background = c.hex;
@@ -365,7 +365,7 @@
           const h = (root.querySelector("[data-height]")?.value || "").trim();
           if (w) body.append("width", w);
           if (h) body.append("height", h);
-          if (!w && !h) throw new Error("Pon un ancho, un alto, o ambos.");
+          if (!w && !h) throw new Error("Enter a width, a height, or both.");
           body.append("mode", root.querySelector("[data-mode]")?.value || "fit");
           body.append("format", fmt);
         } else if (tool === "removebg") {
@@ -397,7 +397,7 @@
           before.alt = "Original";
         }
         if (tool === "colors") {
-          if (!(data.colors || []).length) throw new Error("No se encontraron colores.");
+          if (!(data.colors || []).length) throw new Error("No colors found.");
           paintSwatches(data.colors || []);
           if (img) img.removeAttribute("src");
           if (link) {

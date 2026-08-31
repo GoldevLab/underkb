@@ -1,4 +1,4 @@
-//! Spanish SEO landings that each run a real image tool.
+//! Tool landings (English UI; Spanish URL slugs for search).
 
 use resuma::prelude::*;
 use serde_json::json;
@@ -27,70 +27,70 @@ impl Tool {
 
     fn title(self) -> &'static str {
         match self {
-            Self::Compress => "Comprimir imagen a KB — JPG, PNG y WebP | UnderKb",
-            Self::Convert => "Convertir JPG a WebP online, gratis | UnderKb",
-            Self::Resize => "Redimensionar imagen — ancho, alto y formato | UnderKb",
-            Self::RemoveBg => "Quitar fondo de imagen (fondo plano) | UnderKb",
-            Self::Colors => "Extraer colores de una imagen — paleta HEX | UnderKb",
+            Self::Compress => "Compress image to KB — JPG, PNG and WebP | UnderKb",
+            Self::Convert => "Convert JPG to WebP online, free | UnderKb",
+            Self::Resize => "Resize an image — width, height, and format | UnderKb",
+            Self::RemoveBg => "Remove a flat image background | UnderKb",
+            Self::Colors => "Extract colors from an image — HEX palette | UnderKb",
         }
     }
 
     fn description(self) -> &'static str {
         match self {
             Self::Compress => {
-                "Comprime una foto a 50, 200 o 500 KB. JPG, PNG o WebP. Sin cuenta. Sube hasta 20 MB."
+                "Compress a photo to 50, 200, or 500 KB. JPG, PNG, or WebP. No account. Uploads up to 20 MB."
             }
             Self::Convert => {
-                "Pasa JPG o PNG a WebP con calidad ajustable. También PNG y JPG. Sin cuenta ni marca de agua."
+                "Turn JPG or PNG into WebP with adjustable quality. PNG and JPG export too. No account, no watermark."
             }
             Self::Resize => {
-                "Cambia el ancho y el alto de una imagen. Encajar, recortar o estirar. JPG, WebP o PNG."
+                "Change width and height. Fit, crop, or stretch. JPG, WebP, or PNG."
             }
             Self::RemoveBg => {
-                "Quita un fondo liso (blanco o de estudio) y descarga PNG con transparencia. No es recorte de retrato por IA."
+                "Cut a flat backdrop (white or studio) and download a transparent PNG. Not an AI portrait matte."
             }
             Self::Colors => {
-                "Saca la paleta de colores de una foto: HEX y porcentaje. Copia los códigos para diseño o CSS."
+                "Pull a HEX palette from a photo, with approximate share. Copy codes for design or CSS."
             }
         }
     }
 
     fn eyebrow(self) -> &'static str {
         match self {
-            Self::Compress => "Comprimir a un tamaño",
-            Self::Convert => "Convertir formato",
-            Self::Resize => "Redimensionar",
-            Self::RemoveBg => "Quitar fondo",
-            Self::Colors => "Paleta de colores",
+            Self::Compress => "Compress to a size",
+            Self::Convert => "Convert format",
+            Self::Resize => "Resize",
+            Self::RemoveBg => "Remove background",
+            Self::Colors => "Color palette",
         }
     }
 
     fn h1(self) -> &'static str {
         match self {
-            Self::Compress => "Comprimir una imagen a KB",
-            Self::Convert => "Convertir JPG a WebP",
-            Self::Resize => "Redimensionar una imagen",
-            Self::RemoveBg => "Quitar el fondo de una imagen",
-            Self::Colors => "Extraer colores de una imagen",
+            Self::Compress => "Compress an image to KB",
+            Self::Convert => "Convert JPG to WebP",
+            Self::Resize => "Resize an image",
+            Self::RemoveBg => "Remove a flat background",
+            Self::Colors => "Extract colors from an image",
         }
     }
 
     fn lead(self) -> &'static str {
         match self {
             Self::Compress => {
-                "Elige un presupuesto en kilobytes. Bajamos calidad y, si hace falta, el tamaño en píxeles hasta entrar. Sin cuenta."
+                "Set a kilobyte budget. We drop quality first, then scale pixels if needed. No account."
             }
             Self::Convert => {
-                "WebP suele pesar menos que JPG en la web. Ajusta la calidad o exporta PNG si necesitas transparencia."
+                "WebP is usually smaller than JPG on the web. Tune quality, or export PNG if you need transparency."
             }
             Self::Resize => {
-                "Indica ancho, alto o ambos. Encajar respeta la proporción; rellenar recorta; estirar deforma."
+                "Enter width, height, or both. Fit keeps aspect; fill crops; stretch distorts."
             }
             Self::RemoveBg => {
-                "Sirve para productos y capturas con fondo uniforme. Si el sujeto toca el borde, puede comerse un poco el contorno."
+                "Works on product shots and screenshots with a uniform backdrop. If the subject touches the edge, it can nibble the outline."
             }
             Self::Colors => {
-                "Muestreamos la foto y agrupamos tonos parecidos. Obtienes HEX listos para copiar."
+                "We sample the photo and merge similar tones. You get HEX codes ready to copy."
             }
         }
     }
@@ -98,29 +98,29 @@ impl Tool {
     fn howto(self) -> &'static [(&'static str, &'static str)] {
         match self {
             Self::Compress => &[
-                ("Sube el archivo", "JPG, PNG, WebP o GIF (un fotograma). Hasta 20 MB."),
-                ("Pon el límite", "200 KB va bien para web y correo. 50 KB para miniaturas."),
-                ("Descarga", "Primero bajamos calidad; si no cabe, reducimos el lado más largo."),
+                ("Drop the file", "JPG, PNG, WebP, or GIF (first frame). Up to 20 MB."),
+                ("Set the budget", "200 KB is solid for web and email. 50 KB for thumbnails."),
+                ("Download", "Quality first; if it still will not fit, we shrink the long edge."),
             ],
             Self::Convert => &[
-                ("Sube un JPG o PNG", "También aceptamos WebP y GIF. HEIC lo convierte el navegador si puede."),
-                ("Elige WebP y calidad", "80 es un buen equilibrio. 98 o más usa WebP sin pérdida."),
-                ("Descarga el .webp", "Compáralo con el original: peso y dimensiones aparecen debajo."),
+                ("Drop a JPG or PNG", "WebP and GIF work too. HEIC converts in the browser when it can."),
+                ("Pick WebP and quality", "80 is a good photo default. 98+ uses lossless WebP."),
+                ("Download the .webp", "Compare size and dimensions under the preview."),
             ],
             Self::Resize => &[
-                ("Sube la imagen", "Mismo límite de 20 MB que el resto de UnderKb."),
-                ("Ancho y alto", "Con un solo valor mantenemos la proporción. Los dos juntos usan el modo que elijas."),
-                ("Descarga", "JPG para fotos, PNG si hay transparencia, WebP si quieres un archivo más ligero."),
+                ("Drop the image", "Same 20 MB limit as the rest of UnderKb."),
+                ("Width and height", "One value keeps aspect. Both together use the mode you pick."),
+                ("Download", "JPG for photos, PNG for transparency, WebP for a smaller file."),
             ],
             Self::RemoveBg => &[
-                ("Foto con fondo liso", "Blanco de estudio o un color uniforme funciona. Un paisaje no."),
-                ("Ajusta la tolerancia", "Si queda halo, súbela. Si se come el objeto, bájala."),
-                ("PNG transparente", "El preview usa un damero. Descarga y úsalo en la web o en un diseño."),
+                ("Flat backdrop", "Studio white or a solid color. A landscape will not work."),
+                ("Tune tolerance", "Raise it if you still see a halo. Lower it if it eats the subject."),
+                ("Transparent PNG", "Preview uses a checkerboard. Download and drop it into a layout."),
             ],
             Self::Colors => &[
-                ("Sube la foto", "Logos, UI o fotos. Los píxeles muy transparentes se ignoran."),
-                ("Cuántos colores", "Entre 3 y 12. Los tonos muy parecidos se fusionan."),
-                ("Copia el HEX", "Cada muestra muestra el código y un porcentaje aproximado."),
+                ("Drop the photo", "Logos, UI, or photos. Very transparent pixels are ignored."),
+                ("How many colors", "Between 3 and 12. Near-identical tones are merged."),
+                ("Copy HEX", "Each swatch shows the code and an approximate share."),
             ],
         }
     }
@@ -137,49 +137,49 @@ impl Tool {
 
     pub fn card_title(self) -> &'static str {
         match self {
-            Self::Compress => "Comprimir a KB",
-            Self::Convert => "JPG a WebP",
-            Self::Resize => "Redimensionar",
-            Self::RemoveBg => "Quitar fondo",
-            Self::Colors => "Extraer colores",
+            Self::Compress => "Compress to KB",
+            Self::Convert => "JPG to WebP",
+            Self::Resize => "Resize",
+            Self::RemoveBg => "Remove background",
+            Self::Colors => "Extract colors",
         }
     }
 
     pub fn card_blurb(self) -> &'static str {
         match self {
-            Self::Compress => "Baja la foto a 50, 200 o 500 KB. Calidad primero, luego escala.",
-            Self::Convert => "Pasa JPG o PNG a WebP (o al revés). Ajustas la calidad.",
-            Self::Resize => "Cambia ancho y alto. Encajar, recortar o estirar.",
-            Self::RemoveBg => "Fondo blanco o liso → PNG transparente. No es recorte de retrato.",
-            Self::Colors => "Paleta HEX con un porcentaje aproximado. Copia los códigos.",
+            Self::Compress => "Hit 50, 200, or 500 KB. Quality first, then scale.",
+            Self::Convert => "Turn JPG or PNG into WebP (or back). You set the quality.",
+            Self::Resize => "Change width and height. Fit, crop, or stretch.",
+            Self::RemoveBg => "White or flat backdrop → transparent PNG. Not a portrait cutout.",
+            Self::Colors => "HEX palette with an approximate share. Copy the codes.",
         }
     }
 
     pub fn card_cta(self) -> &'static str {
-        "Abrir herramienta"
+        "Open tool"
     }
 
     fn faq(self) -> &'static [(&'static str, &'static str)] {
         match self {
             Self::Compress => &[
-                ("¿Puedo comprimir a 200 KB?", "Sí. 200 KB es el valor por defecto. También hay 50, 100, 500 y 1024."),
-                ("¿Guardan mis fotos?", "El resultado vive en memoria unos 30 minutos para que lo descargues, y luego caduca."),
+                ("Can I compress to 200 KB?", "Yes. 200 KB is the default. You can also pick 50, 100, 500, or 1024."),
+                ("Do you store my photos?", "The result stays in memory about 30 minutes so you can download it, then it expires."),
             ],
             Self::Convert => &[
-                ("¿WebP es más pequeño que JPG?", "En fotos, casi siempre, con calidad 70–85. Gráficos planos a veces quedan mejor en PNG o WebP sin pérdida."),
-                ("¿Se pierde transparencia?", "Si sales a JPG, sí (fondo blanco). WebP y PNG la conservan."),
+                ("Is WebP smaller than JPG?", "For photos, usually, at quality 70–85. Flat graphics sometimes prefer PNG or lossless WebP."),
+                ("Is transparency lost?", "If you export JPG, yes (white background). WebP and PNG keep it."),
             ],
             Self::Resize => &[
-                ("¿Puedo poner solo el ancho?", "Sí. El alto se calcula para no deformar. Igual al revés."),
-                ("¿Hay un máximo?", "El lado más largo en el servidor llega a 4096 px. Fotos enormes se reducen antes en el navegador."),
+                ("Can I set only the width?", "Yes. Height is computed so it is not stretched. Same the other way."),
+                ("Is there a maximum?", "The long edge on the server is 4096 px. Huge camera files are scaled in the browser first."),
             ],
             Self::RemoveBg => &[
-                ("¿Quita el fondo de un retrato?", "No es un modelo de personas. Si el fondo no es plano o el pelo toca el borde, el recorte será tosco."),
-                ("¿Por qué sale PNG?", "Hace falta canal alfa. JPG no tiene transparencia."),
+                ("Does it cut out a portrait?", "No people model. If the backdrop is not flat or hair hits the edge, the cut will be rough."),
+                ("Why PNG?", "You need an alpha channel. JPG has no transparency."),
             ],
             Self::Colors => &[
-                ("¿Son los colores exactos de cada píxel?", "No. Agrupamos tonos cercanos. Sirve para paletas, no para medición de imprenta."),
-                ("¿Cuántos colores salen?", "Hasta los que pidas, si la foto los tiene. Una captura grisácea puede devolver menos."),
+                ("Are these exact pixel colors?", "No. We cluster nearby tones. Fine for palettes, not for press matching."),
+                ("How many colors come back?", "Up to the count you ask for, if the photo has them. A gray screenshot may return fewer."),
             ],
         }
     }
@@ -229,7 +229,7 @@ pub fn page(tool: Tool) -> View {
         .collect();
 
     let form = match tool {
-        Tool::Compress => tool::compressor_es(),
+        Tool::Compress => tool::compressor(),
         Tool::Convert => tool::converter(),
         Tool::Resize => tool::resizer(),
         Tool::RemoveBg => tool::remover(),
@@ -239,7 +239,7 @@ pub fn page(tool: Tool) -> View {
     let more = more_tools(tool);
 
     view! {
-        <main class="home-page" lang="es">
+        <main class="home-page" lang="en">
             {View::raw(format!(
                 r#"<script type="application/ld+json">{}</script><script type="application/ld+json">{}</script>"#,
                 page_ld, faq_ld
@@ -252,17 +252,17 @@ pub fn page(tool: Tool) -> View {
             </section>
             {crate::ads::slot("landing-hero", "infeed")}
             <section class="howto" aria-labelledby="howto-title">
-                <h2 id="howto-title">"Cómo usarlo"</h2>
+                <h2 id="howto-title">"How to use it"</h2>
                 <ol class="howto-grid">{howto}</ol>
             </section>
             {crate::ads::slot("landing-mid", "infeed")}
             <section class="faq" aria-labelledby="faq-title">
-                <h2 id="faq-title">"Preguntas"</h2>
+                <h2 id="faq-title">"FAQ"</h2>
                 <div class="faq-list">{faq}</div>
             </section>
             {crate::ads::slot("landing-faq", "infeed")}
             <section class="features" aria-labelledby="more-title">
-                <h2 id="more-title">"Otras herramientas"</h2>
+                <h2 id="more-title">"Other tools"</h2>
                 <ul class="feature-grid">{more}</ul>
             </section>
         </main>
@@ -271,11 +271,11 @@ pub fn page(tool: Tool) -> View {
 
 fn more_tools(current: Tool) -> Vec<View> {
     let all = [
-        (Tool::Compress, "Comprimir a KB", "Límite real en kilobytes."),
-        (Tool::Convert, "JPG → WebP", "Calidad ajustable."),
-        (Tool::Resize, "Redimensionar", "Ancho, alto o recorte."),
-        (Tool::RemoveBg, "Quitar fondo", "Fondos lisos a PNG."),
-        (Tool::Colors, "Extraer colores", "Paleta HEX."),
+        (Tool::Compress, "Compress to KB", "A real kilobyte cap."),
+        (Tool::Convert, "JPG → WebP", "Adjustable quality."),
+        (Tool::Resize, "Resize", "Width, height, or crop."),
+        (Tool::RemoveBg, "Remove background", "Flat backdrops to PNG."),
+        (Tool::Colors, "Extract colors", "HEX palette."),
     ];
     all.into_iter()
         .filter(|(t, _, _)| *t != current)
