@@ -17,7 +17,7 @@ fn dropzone(title: &'static str, hint: &'static str) -> View {
             <span class="drop-hint" data-filename="">{hint}</span>
         </label>
         <p class="hint" data-gif="" hidden="">"Animated GIFs: we keep the first frame only."</p>
-        <p class="hint" data-format-hint="" hidden="">"JPG usually hits the budget on photos. Lossless WebP/PNG can stay huge."</p>
+        <p class="hint" data-format-hint="" hidden="">"JPG or WebP usually hits the budget on photos. PNG can stay huge."</p>
     }
 }
 
@@ -38,7 +38,10 @@ fn result_block(before: &'static str, after: &'static str, download: &'static st
             <p class="result-stats" data-stats=""></p>
             <p class="result-warn" data-warn="" hidden="" role="status"></p>
             <div class="swatches" data-swatches="" hidden=""></div>
-            <a class="btn btn-primary" data-download="" download="">{download}</a>
+            <div class="result-actions">
+                <a class="btn btn-primary" data-download="" download="">{download}</a>
+                <button type="button" class="btn btn-ghost" data-share="" hidden="">"Share"</button>
+            </div>
         </div>
     }
 }
@@ -54,14 +57,15 @@ pub fn compressor() -> View {
                         id="ukb-file"
                         name="file"
                         type="file"
+                        multiple=""
                         accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,.heic,.heif"
                     />
                     <img class="drop-preview" data-drop-preview="" alt="" hidden="" />
                     <span class="drop-title">"Drop an image, or click to choose"</span>
-                    <span class="drop-hint" data-filename="">"JPG, PNG, WebP, GIF, HEIC · max 20 MB"</span>
+                    <span class="drop-hint" data-filename="">"JPG, PNG, WebP, GIF, HEIC · free 20 MB · Pro: 50 MB or ZIP of 20"</span>
                 </label>
                 <p class="hint" data-gif="" hidden="">"Animated GIFs: we keep the first frame only."</p>
-                <p class="hint" data-format-hint="" hidden="">"JPG usually hits the budget on photos. Lossless WebP/PNG can stay huge or time out."</p>
+                <p class="hint" data-format-hint="" hidden="">"JPG or WebP usually hits the budget on photos. PNG can stay huge or time out."</p>
                 <div class="controls">
                     <label>
                         "Target size (KB)"
@@ -81,7 +85,7 @@ pub fn compressor() -> View {
                         "Output"
                         <select data-format="" id="ukb-format" name="format">
                             <option value="jpeg" selected=true>"JPG"</option>
-                            <option value="webp">"WebP (lossless)"</option>
+                            <option value="webp">"WebP"</option>
                             <option value="png">"PNG"</option>
                         </select>
                     </label>
@@ -253,15 +257,3 @@ pub fn palette() -> View {
     }
 }
 
-pub fn tools_nav() -> View {
-    view! {
-        <nav class="tool-nav" aria-label="Tools">
-            <NavLink href="/" class="tool-nav-link" activeClass="is-active" exact=true>"Home"</NavLink>
-            <NavLink href="/comprimir-imagen-kb" class="tool-nav-link" activeClass="is-active">"Compress"</NavLink>
-            <NavLink href="/convertir-jpg-a-webp" class="tool-nav-link" activeClass="is-active">"JPG→WebP"</NavLink>
-            <NavLink href="/redimensionar-imagen" class="tool-nav-link" activeClass="is-active">"Resize"</NavLink>
-            <NavLink href="/quitar-fondo" class="tool-nav-link" activeClass="is-active">"Remove bg"</NavLink>
-            <NavLink href="/extraer-colores-imagen" class="tool-nav-link" activeClass="is-active">"Colors"</NavLink>
-        </nav>
-    }
-}

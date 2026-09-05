@@ -87,7 +87,7 @@ pub fn remove_background(
     format: OutFormat,
 ) -> Result<ImageOut, String> {
     let (img, ow, oh) = decode_capped(input)?;
-    let cut = punch_flat_background(&img.to_rgba8(), tolerance);
+    let cut = punch_flat_background(&img.to_rgba8(), tolerance)?;
     let out = DynamicImage::ImageRgba8(cut);
     let fmt = match format {
         OutFormat::Jpeg => OutFormat::Png,
@@ -107,6 +107,7 @@ pub struct Swatch {
 
 pub fn extract_colors(input: &[u8], count: usize) -> Result<(Vec<Swatch>, u32, u32), String> {
     let (img, ow, oh) = decode_capped(input)?;
+    crate::compress::check_cpu_deadline()?;
     let n = count.clamp(3, 12);
     Ok((palette(&img, n), ow, oh))
 }
@@ -145,11 +146,11 @@ fn rgb_of(p: Rgba<u8>) -> [u8; 3] {
 
 /// Flood-fill from the border: pixels similar to the edge color become transparent.
 /// Works on product shots and screenshots with a flat backdrop; not a portrait matte.
-fn punch_flat_background(src: &RgbaImage, tolerance: u8) -> RgbaImage {
+fn punch_flat_background(src: &RgbaImage, tolerance: u8) -> Result<RgbaImage, String> {
     let w = src.width() as usize;
     let h = src.height() as usize;
     if w == 0 || h == 0 {
-        return src.clone();
+        return Ok(src.clone());
     }
     let tol = tolerance.clamp(8, 90) as u32;
     let thresh = tol.saturating_mul(tol).saturating_mul(3);
@@ -196,7 +197,12 @@ fn punch_flat_background(src: &RgbaImage, tolerance: u8) -> RgbaImage {
         push(0, y, &mut seen, &mut q);
         push(w - 1, y, &mut seen, &mut q);
     }
+    let mut hops = 0u32;
     while let Some((x, y)) = q.pop_front() {
+        hops = hops.wrapping_add(1);
+        if hops % 65_536 == 0 {
+            crate::compress::check_cpu_deadline()?;
+        }
         let neigh = [
             (x.wrapping_sub(1), y),
             (x + 1, y),
@@ -230,7 +236,7 @@ fn punch_flat_background(src: &RgbaImage, tolerance: u8) -> RgbaImage {
             px.0[3] = a.min(px.0[3]);
         }
     }
-    out
+    Ok(out)
 }
 
 fn palette(img: &DynamicImage, count: usize) -> Vec<Swatch> {

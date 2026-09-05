@@ -1,6 +1,8 @@
 //! Shrink an image until it fits a byte budget.
 
+use std::cell::Cell;
 use std::io::Cursor;
+use std::time::Instant;
 
 use image::codecs::jpeg::JpegEncoder;
 use image::codecs::png::{CompressionType, FilterType as PngFilter, PngEncoder};
@@ -10,11 +12,40 @@ use image::{
     Limits, Rgb, RgbImage,
 };
 
-pub const MAX_UPLOAD_BYTES: usize = 20 * 1024 * 1024;
+pub const MAX_UPLOAD_BYTES: usize = 50 * 1024 * 1024;
 pub const MIN_TARGET_BYTES: usize = 8 * 1024;
 pub const MAX_TARGET_BYTES: usize = 5 * 1024 * 1024;
 pub(crate) const MAX_EDGE: u32 = 4096;
 pub(crate) const MAX_PIXELS: u64 = 12_000_000;
+pub(crate) const CPU_TIMEOUT_MSG: &str = "That image took too long. Try a smaller file.";
+
+thread_local! {
+    static CPU_DEADLINE: Cell<Option<Instant>> = const { Cell::new(None) };
+}
+
+pub(crate) fn with_cpu_deadline<R>(until: Instant, job: impl FnOnce() -> R) -> R {
+    struct Clear;
+    impl Drop for Clear {
+        fn drop(&mut self) {
+            CPU_DEADLINE.with(|d| d.set(None));
+        }
+    }
+    CPU_DEADLINE.with(|d| d.set(Some(until)));
+    let _clear = Clear;
+    job()
+}
+
+pub(crate) fn cpu_deadline_hit() -> bool {
+    CPU_DEADLINE.with(|d| d.get().is_some_and(|until| Instant::now() >= until))
+}
+
+pub(crate) fn check_cpu_deadline() -> Result<(), String> {
+    if cpu_deadline_hit() {
+        Err(CPU_TIMEOUT_MSG.into())
+    } else {
+        Ok(())
+    }
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum OutFormat {
@@ -49,7 +80,7 @@ impl OutFormat {
     }
 
     fn lossy(self) -> bool {
-        matches!(self, Self::Jpeg)
+        matches!(self, Self::Jpeg | Self::Webp)
     }
 
     pub fn parse_prefer_webp(raw: &str) -> Self {
@@ -95,7 +126,7 @@ pub fn compress(
         return Err("Empty file.".into());
     }
     if input.len() > MAX_UPLOAD_BYTES {
-        return Err("File is over 20 MB. Pick a smaller image.".into());
+        return Err("File is over 50 MB. Pick a smaller image.".into());
     }
     reject_unsupported(input)?;
     let target = target_bytes.clamp(MIN_TARGET_BYTES, MAX_TARGET_BYTES);
@@ -106,16 +137,20 @@ pub fn compress(
     }
     // Always re-encode so GPS/EXIF never leave with the download.
 
+    check_cpu_deadline()?;
     let mut work = cap_dimensions(img);
     let mut quality: u8 = 86;
-    let mut best = encode(&work, format, quality)?;
+    let mut best = encode_with_quality(&work, format, quality)?;
     for _ in 0..48 {
         if best.len() <= target {
             return done(&work, best, format, input.len(), ow, oh, false);
         }
+        if cpu_deadline_hit() {
+            return done(&work, best, format, input.len(), ow, oh, true);
+        }
         if format.lossy() && quality > 40 {
             quality = quality.saturating_sub(8);
-            best = encode(&work, format, quality)?;
+            best = encode_with_quality(&work, format, quality)?;
             continue;
         }
         let (w, h) = work.dimensions();
@@ -132,10 +167,13 @@ pub fn compress(
         if format.lossy() {
             quality = 72;
         }
-        best = encode(&work, format, quality)?;
+        best = encode_with_quality(&work, format, quality)?;
     }
     let mut extra = 0;
     while best.len() > target && extra < 10 {
+        if cpu_deadline_hit() {
+            return done(&work, best, format, input.len(), ow, oh, true);
+        }
         extra += 1;
         let (w, h) = work.dimensions();
         if w.max(h) < 48 {
@@ -151,7 +189,7 @@ pub fn compress(
         }
         work = work.resize(nw, nh, FilterType::Triangle);
         quality = if format.lossy() { 42 } else { quality };
-        best = encode(&work, format, quality)?;
+        best = encode_with_quality(&work, format, quality)?;
     }
     let over_budget = best.len() > target;
     done(
@@ -241,7 +279,7 @@ pub(crate) fn decode_capped(input: &[u8]) -> Result<(DynamicImage, u32, u32), St
         return Err("Empty file.".into());
     }
     if input.len() > MAX_UPLOAD_BYTES {
-        return Err("File is over 20 MB. Pick a smaller image.".into());
+        return Err("File is over 50 MB. Pick a smaller image.".into());
     }
     reject_unsupported(input)?;
     let img = load_oriented(input)?;
@@ -249,6 +287,7 @@ pub(crate) fn decode_capped(input: &[u8]) -> Result<(DynamicImage, u32, u32), St
     if ow == 0 || oh == 0 {
         return Err("That image has no pixels.".into());
     }
+    check_cpu_deadline()?;
     Ok((cap_dimensions(img), ow, oh))
 }
 
@@ -308,6 +347,7 @@ fn cap_dimensions(img: DynamicImage) -> DynamicImage {
 }
 
 pub(crate) fn encode(img: &DynamicImage, format: OutFormat, quality: u8) -> Result<Vec<u8>, String> {
+    check_cpu_deadline()?;
     match format {
         OutFormat::Jpeg => encode_jpeg(img, quality),
         OutFormat::Png => encode_png(img),
@@ -320,6 +360,7 @@ pub(crate) fn encode_with_quality(
     format: OutFormat,
     quality: u8,
 ) -> Result<Vec<u8>, String> {
+    check_cpu_deadline()?;
     match format {
         OutFormat::Jpeg => encode_jpeg(img, quality),
         OutFormat::Png => encode_png(img),
@@ -490,6 +531,12 @@ mod tests {
         let out = compress(&src, 80 * 1024, OutFormat::Webp).expect("webp");
         assert!(!out.bytes.is_empty());
         assert_eq!(&out.bytes[..4], b"RIFF");
+        assert!(
+            out.bytes.len() <= 80 * 1024,
+            "lossy webp should hit the budget, got {}",
+            out.bytes.len()
+        );
+        assert!(!out.over_budget);
     }
 
     #[test]
@@ -560,5 +607,13 @@ mod tests {
     #[test]
     fn filename_stem_safe() {
         assert_eq!(stem_filename("../../weird photo!.PNG"), "weird-photo-");
+    }
+
+    #[test]
+    fn expired_deadline_fails_encode() {
+        let img = DynamicImage::ImageRgb8(RgbImage::new(8, 8));
+        let err = with_cpu_deadline(Instant::now(), || encode(&img, OutFormat::Jpeg, 80))
+            .unwrap_err();
+        assert_eq!(err, CPU_TIMEOUT_MSG);
     }
 }

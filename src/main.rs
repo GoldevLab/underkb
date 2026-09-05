@@ -5,10 +5,12 @@ mod api;
 mod compress;
 mod landing;
 mod ops;
+mod site;
 mod pages;
 mod stage;
 mod tool;
 
+use axum::response::Redirect;
 use axum::routing::{get, post};
 use pages::PagesRegistry;
 use resuma::prelude::*;
@@ -93,24 +95,19 @@ fn chrome(body: View) -> View {
                         <span class="brand-mark" aria-hidden="true">"kB"</span>
                         <span class="brand-name">"UnderKb"</span>
                     </NavLink>
-                    {tool::tools_nav()}
                     {theme_picker()}
                     <span class="nav-progress" aria-hidden="true"></span>
                 </div>
             </header>
             {body}
-            <div class="ad-rail">
-                {crate::ads::slot("footer", "leaderboard")}
-            </div>
             <footer class="site-footer">
+                {crate::landing::seo_footer_links()}
+                {crate::landing::sister_apps_links()}
                 <p>
                     <strong>"UnderKb"</strong>
-                    " — image tools, no account. Pick one from the home page."
+                    " — compress to a kilobyte budget, convert, resize, cut a flat background, HEX palette. No account."
                 </p>
             </footer>
-            <div class="ad-rail ad-rail-end">
-                {crate::ads::slot("anchor", "leaderboard")}
-            </div>
         </div>
     }
 }
@@ -128,13 +125,17 @@ fn not_found() -> View {
             <p>
                 <NavLink href="/" class="btn btn-primary">"Go home"</NavLink>
             </p>
-            {crate::ads::slot("notfound-mid", "infeed")}
         </main>
     })
 }
 
+async fn redirect_tool_alias(target: &'static str) -> Redirect {
+    Redirect::permanent(target)
+}
+
 fn seo_kit() -> SeoKit {
-    let mut kit = SeoKit::new("UnderKb", "https://underkb.fly.dev")
+    let origin = crate::landing::public_origin();
+    let mut kit = SeoKit::new("UnderKb", &origin)
         .with_locale("en_US")
         .with_keywords(
             "compress image to 200kb, comprimir imagen kb, convertir jpg a webp, redimensionar imagen, \
@@ -150,7 +151,7 @@ fn seo_kit() -> SeoKit {
             "@type": "WebApplication",
             "name": "UnderKb",
             "alternateName": ["compress image to 200kb", "image compressor"],
-            "url": "https://underkb.fly.dev",
+            "url": crate::landing::public_origin(),
             "applicationCategory": "UtilitiesApplication",
             "operatingSystem": "Web",
             "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
@@ -175,15 +176,41 @@ fn seo_kit() -> SeoKit {
                         "@type": "Answer",
                         "text": "The compressed file is kept in memory for about 30 minutes so you can download it, then it expires."
                     }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Do I need an account?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "No. Drop a file, download. Ads may appear around the tool."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Does remove background work on portraits?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Only flat backdrops (studio, white). It is not an AI people matte."
+                    }
                 }
             ]
         }));
     kit.theme_color = Some("#0c1410".into());
     kit.author = "UnderKb".into();
-    kit.llms_sections = vec![(
-        "How to use".into(),
-        "POST /api/compress file,target_kb,format. /api/convert format,quality. /api/resize width,height,mode. /api/remove-bg tolerance. /api/colors count.".into(),
-    )];
+    kit.llms_sections = vec![
+        (
+            "How to use".into(),
+            "Open / and drop an image to compress to a KB budget (default 200). Other jobs have their own pages.".into(),
+        ),
+        (
+            "SEO landings".into(),
+            "/comprimir-imagen-kb, /convertir-jpg-a-webp, /redimensionar-imagen, /quitar-fondo, /extraer-colores-imagen. English aliases redirect to those. /privacy /terms /pricing.".into(),
+        ),
+        (
+            "API".into(),
+            "POST /api/compress file,target_kb,format. POST /api/compress-batch (Pro: ZIP of up to 20). /api/convert format,quality. /api/resize width,height,mode. /api/remove-bg tolerance. /api/colors count. Optional X-Api-Key (UNDERKB_PRO_KEYS) for 50 MB and batch.".into(),
+        ),
+    ];
     kit
 }
 
@@ -191,16 +218,26 @@ fn seo_kit() -> SeoKit {
 async fn main() -> std::io::Result<()> {
     // `with_seo_kit` owns keywords/author/theme-color meta, JSON-LD, and the
     // `/robots.txt` + `/llms.txt` routes (AI crawler policy included).
-    let head = "<link rel=\"icon\" href=\"/icon.svg\" type=\"image/svg+xml\" /><script type=\"module\" src=\"/js/underkb.js?v=7\"></script>";
+    let head = format!(
+        "<link rel=\"icon\" href=\"/icon.svg\" type=\"image/svg+xml\" /><script type=\"module\" src=\"/js/underkb.js?v=9\"></script>{}{}",
+        ads::head_snippet(),
+        crate::site::head_extras()
+    );
+    let ads_txt = ads::ads_txt().map(|s| -> &'static [u8] {
+        Box::leak(s.into_bytes().into_boxed_slice())
+    });
     const ICON: &[u8] = include_bytes!("icon.svg");
     let public = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("public");
 
-    FlowApp::new()
+    let mut serve = FlowServeOptions::default();
+    ads::apply_csp(&mut serve.security.csp);
+
+    let mut app = FlowApp::new()
         .with_title("UnderKb — compress, convert, resize, and more")
         .with_description(
             "Free image tools: compress to KB, JPG to WebP, resize, remove a flat background, HEX palette. No account.",
         )
-        .with_site_url("https://underkb.fly.dev")
+        .with_site_url(crate::landing::public_origin())
         .with_og_image("/cover.png")
         .with_head(head)
         .with_seo_kit(seo_kit())
@@ -211,8 +248,11 @@ async fn main() -> std::io::Result<()> {
                 .storage_key("underkb-theme"),
         )
         .with_stylesheet("/css/underkb.css")
-        .static_asset("/icon.svg", ICON, "image/svg+xml")
-        .with_public_dir(public)
+        .static_asset("/icon.svg", ICON, "image/svg+xml");
+    if let Some(body) = ads_txt {
+        app = app.static_asset("/ads.txt", body, "text/plain; charset=utf-8");
+    }
+    app.with_public_dir(public)
         .with_pwa(FlowPwaConfig {
             name: "UnderKb".into(),
             short_name: "UnderKb".into(),
@@ -222,17 +262,17 @@ async fn main() -> std::io::Result<()> {
             background_color: "#0c1410".into(),
             start_url: "/".into(),
             scope: "/".into(),
-            cache_version: "ukb-2".into(),
+            cache_version: "ukb-5".into(),
             display: "standalone".into(),
             orientation: "any".into(),
             lang: "en".into(),
             icon_char: Some("k".into()),
-            // Must match the URL the page requests (`?v=6`), or the SW precache
+            // Must match the URL the page requests (`?v=9`), or the SW precache
             // never hits offline.
             precache_paths: vec![
                 "/themes.css".into(),
                 "/css/underkb.css".into(),
-                "/js/underkb.js?v=7".into(),
+                "/js/underkb.js?v=9".into(),
             ],
             shortcuts: vec![
                 PwaShortcut {
@@ -251,7 +291,13 @@ async fn main() -> std::io::Result<()> {
                 "UnderKb needs a connection to process images. Reconnect and try again.".into(),
             manifest_icons: Vec::new(),
         })
+        .route(landing::Tool::Compress.en_alias(), get(|| redirect_tool_alias(landing::Tool::Compress.path())))
+        .route(landing::Tool::Convert.en_alias(), get(|| redirect_tool_alias(landing::Tool::Convert.path())))
+        .route(landing::Tool::Resize.en_alias(), get(|| redirect_tool_alias(landing::Tool::Resize.path())))
+        .route(landing::Tool::RemoveBg.en_alias(), get(|| redirect_tool_alias(landing::Tool::RemoveBg.path())))
+        .route(landing::Tool::Colors.en_alias(), get(|| redirect_tool_alias(landing::Tool::Colors.path())))
         .route("/api/compress", post(api::compress_upload).options(api::preflight))
+        .route("/api/compress-batch", post(api::compress_batch).options(api::preflight))
         .route("/api/convert", post(api::convert_upload).options(api::preflight))
         .route("/api/resize", post(api::resize_upload).options(api::preflight))
         .route("/api/remove-bg", post(api::remove_bg_upload).options(api::preflight))
@@ -262,6 +308,6 @@ async fn main() -> std::io::Result<()> {
             std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("src/pages"),
             PagesRegistry,
         )
-        .serve(FlowServeOptions::default())
+        .serve(serve)
         .await
 }

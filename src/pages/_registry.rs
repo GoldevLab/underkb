@@ -12,6 +12,9 @@ impl FlowPageRegistry for PagesRegistry {
             ("/redimensionar-imagen", "redimensionar_imagen"),
             ("/quitar-fondo", "quitar_fondo"),
             ("/extraer-colores-imagen", "extraer_colores_imagen"),
+            ("/privacy", "privacy"),
+            ("/terms", "terms"),
+            ("/pricing", "pricing"),
         ]
     }
 
@@ -29,6 +32,9 @@ impl FlowPageRegistry for PagesRegistry {
             "redimensionar_imagen" => Some(super::redimensionar_imagen::page(req)),
             "quitar_fondo" => Some(super::quitar_fondo::page(req)),
             "extraer_colores_imagen" => Some(super::extraer_colores_imagen::page(req)),
+            "privacy" => Some(super::privacy::page(req)),
+            "terms" => Some(super::terms::page(req)),
+            "pricing" => Some(super::pricing::page(req)),
             _ => None,
         }
     }

@@ -13,3 +13,4 @@ axum = { version = "0.8", features = ["multipart"] }
 image = { version = "0.25", default-features = false, features = ["jpeg", "png", "gif", "webp"] }
 webp = "0.3"
 getrandom = "0.3"
+zip = { version = "2", default-features = false, features = ["deflate"] }

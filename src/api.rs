@@ -3,7 +3,8 @@
 
 use std::collections::HashMap;
 use std::net::SocketAddr;
-use std::sync::{LazyLock, Mutex, OnceLock};
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::{Arc, LazyLock, Mutex, OnceLock};
 use std::time::{Duration, Instant};
 
 use axum::extract::{ConnectInfo, Multipart, Path, Query};
@@ -14,12 +15,22 @@ use serde::{Deserialize, Serialize};
 use tokio::sync::Semaphore;
 
 use crate::compress::{
-    clamp_target, compress, reject_unsupported, stem_filename, OutFormat, MAX_UPLOAD_BYTES,
+    clamp_target, compress, reject_unsupported, stem_filename, with_cpu_deadline, OutFormat,
+    CPU_TIMEOUT_MSG, MAX_UPLOAD_BYTES,
 };
 use crate::ops::{self, FitMode, ImageOut};
 use crate::stage;
 
 static COMPRESS_SLOTS: LazyLock<Semaphore> = LazyLock::new(|| Semaphore::new(2));
+static IN_FLIGHT: LazyLock<Arc<AtomicUsize>> =
+    LazyLock::new(|| Arc::new(AtomicUsize::new(0)));
+/// 2 accepted jobs + 1 leftover after a 504. More than this OOMs the 512 MB VM.
+const MAX_IN_FLIGHT: usize = 3;
+const SLOT_WAIT: Duration = Duration::from_secs(8);
+/// HTTP backstop. The blocking job also gets `CPU_BUDGET` so it usually
+/// stops itself and frees the slot on the normal return path.
+const CPU_WATCHDOG: Duration = Duration::from_secs(25);
+const CPU_BUDGET: Duration = Duration::from_secs(22);
 const RATE_MAX: usize = 12;
 const RATE_WINDOW: Duration = Duration::from_secs(60);
 
@@ -56,12 +67,14 @@ struct ColorsBody {
 
 struct Parts {
     file: Option<(Vec<u8>, String)>,
+    files: Vec<(Vec<u8>, String)>,
     fields: HashMap<String, String>,
 }
 
 async fn take_parts(multipart: &mut Multipart) -> Result<Parts, Response> {
     let mut parts = Parts {
         file: None,
+        files: Vec::new(),
         fields: HashMap::new(),
     };
     loop {
@@ -77,10 +90,21 @@ async fn take_parts(multipart: &mut Multipart) -> Result<Parts, Response> {
         };
         let name = field.name().unwrap_or("").to_string();
         match name.as_str() {
-            "file" | "upload" => {
+            "file" | "upload" | "files" => {
                 let filename = field.file_name().unwrap_or("image").to_string();
                 match field.bytes().await {
-                    Ok(b) => parts.file = Some((b.to_vec(), filename)),
+                    Ok(b) => {
+                        let total: usize = parts.files.iter().map(|(d, _)| d.len()).sum();
+                        if total.saturating_add(b.len()) > crate::site::PRO_MAX_BYTES {
+                            return Err(fail(
+                                StatusCode::PAYLOAD_TOO_LARGE,
+                                "Upload is over 50 MB total.".into(),
+                            ));
+                        }
+                        let item = (b.to_vec(), filename);
+                        parts.files.push(item.clone());
+                        parts.file = Some(item);
+                    }
                     Err(e) => {
                         return Err(fail(
                             StatusCode::BAD_REQUEST,
@@ -130,7 +154,13 @@ pub async fn compress_upload(
     let orig_bytes = field_u32(&parts, "orig_bytes").map(|n| n as usize);
     let orig_w = field_u32(&parts, "orig_width");
     let orig_h = field_u32(&parts, "orig_height");
-    let (bytes, filename) = match gate_file(parts.file, &ip) {
+    let pro = crate::site::is_pro(&headers);
+    let max_bytes = if pro {
+        crate::site::PRO_MAX_BYTES
+    } else {
+        crate::site::FREE_MAX_BYTES
+    };
+    let (bytes, filename) = match gate_file(parts.file, &ip, max_bytes) {
         Ok(v) => v,
         Err(r) => return r,
     };
@@ -164,6 +194,211 @@ pub async fn compress_upload(
     )
 }
 
+pub async fn compress_batch(
+    ConnectInfo(addr): ConnectInfo<SocketAddr>,
+    headers: HeaderMap,
+    mut multipart: Multipart,
+) -> Response {
+    let ip = client_ip(&headers, Some(addr));
+    let parts = match take_parts(&mut multipart).await {
+        Ok(p) => p,
+        Err(r) => return r,
+    };
+    let pro = crate::site::is_pro(&headers);
+    let max_files = if pro {
+        crate::site::PRO_BATCH
+    } else {
+        crate::site::FREE_BATCH
+    };
+    let max_bytes = if pro {
+        crate::site::PRO_MAX_BYTES
+    } else {
+        crate::site::FREE_MAX_BYTES
+    };
+    let target_kb = field_u32(&parts, "target_kb").unwrap_or(200);
+    let format = OutFormat::parse(field_str(&parts, "format"));
+    let target = clamp_target(target_kb);
+    let files = if parts.files.is_empty() {
+        parts.file.into_iter().collect::<Vec<_>>()
+    } else {
+        parts.files
+    };
+    if files.is_empty() {
+        return fail(
+            StatusCode::BAD_REQUEST,
+            "Attach at least one image in the file field.".into(),
+        );
+    }
+    if files.len() > max_files {
+        return fail(
+            StatusCode::PAYMENT_REQUIRED,
+            if pro {
+                "Max 20 files per ZIP.".into()
+            } else {
+                "Free is one file. A Pro key on /pricing allows a ZIP of up to 20.".into()
+            },
+        );
+    }
+    if files.len() == 1 {
+        let (bytes, filename) = match gate_file(Some(files.into_iter().next().unwrap()), &ip, max_bytes)
+        {
+            Ok(v) => v,
+            Err(r) => return r,
+        };
+        let result = match run_cpu(move || compress(&bytes, target, format)).await {
+            Ok(r) => r,
+            Err(r) => return r,
+        };
+        let out_name = format!(
+            "{}-{}kb.{}",
+            stem_filename(&filename),
+            (result.bytes.len() / 1024).max(1),
+            result.format.ext()
+        );
+        return staged_ok(
+            result.bytes,
+            result.format,
+            out_name,
+            None,
+            None,
+            None,
+            result.original_bytes,
+            result.original_width,
+            result.original_height,
+            result.width,
+            result.height,
+            (target / 1024) as u32,
+            result.over_budget,
+        );
+    }
+
+    let mut gated = Vec::with_capacity(files.len());
+    for item in files {
+        match gate_file(Some(item), &ip, max_bytes) {
+            Ok(v) => gated.push(v),
+            Err(r) => return r,
+        }
+    }
+    let n = gated.len();
+    let packed = match run_cpu_batch(move || zip_compressed(gated, target, format)).await {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
+    let id = match stage::put(packed.bytes, "application/zip", "underkb-batch.zip") {
+        Ok(id) => id,
+        Err(_) => {
+            return fail(
+                StatusCode::INSUFFICIENT_STORAGE,
+                "Could not stage the download.".into(),
+            );
+        }
+    };
+    cors(
+        StatusCode::OK,
+        Json(OkBody {
+            ok: true,
+            original_bytes: packed.original_bytes,
+            result_bytes: packed.result_bytes,
+            width: 0,
+            height: 0,
+            original_width: 0,
+            original_height: 0,
+            target_kb: (target / 1024) as u32,
+            format: "zip".into(),
+            mime: "application/zip".into(),
+            filename: format!("underkb-{n}-files.zip"),
+            url: format!("/d/{id}"),
+            over_budget: packed.over_budget,
+        }),
+    )
+}
+
+struct ZipPack {
+    bytes: Vec<u8>,
+    original_bytes: usize,
+    result_bytes: usize,
+    over_budget: bool,
+}
+
+fn zip_compressed(
+    files: Vec<(Vec<u8>, String)>,
+    target: usize,
+    format: OutFormat,
+) -> Result<ZipPack, String> {
+    use std::collections::HashSet;
+    use std::io::Write;
+    use zip::write::SimpleFileOptions;
+    use zip::{CompressionMethod, ZipWriter};
+
+    let mut original_bytes = 0usize;
+    let mut over_budget = false;
+    let mut used = HashSet::new();
+    let mut entries = Vec::with_capacity(files.len());
+    for (bytes, filename) in files {
+        original_bytes += bytes.len();
+        let result = compress(&bytes, target, format)?;
+        drop(bytes);
+        over_budget |= result.over_budget;
+        let mut name = format!(
+            "{}-{}kb.{}",
+            stem_filename(&filename),
+            (result.bytes.len() / 1024).max(1),
+            result.format.ext()
+        );
+        if !used.insert(name.clone()) {
+            for n in 2..10_000 {
+                let cand = format!(
+                    "{}-{n}-{}kb.{}",
+                    stem_filename(&filename),
+                    (result.bytes.len() / 1024).max(1),
+                    result.format.ext()
+                );
+                if used.insert(cand.clone()) {
+                    name = cand;
+                    break;
+                }
+            }
+        }
+        entries.push((name, result.bytes));
+    }
+
+    let mut zip = ZipWriter::new(std::io::Cursor::new(Vec::new()));
+    let opts = SimpleFileOptions::default().compression_method(CompressionMethod::Deflated);
+    for (name, data) in entries {
+        zip.start_file(name, opts).map_err(|e| e.to_string())?;
+        zip.write_all(&data).map_err(|e| e.to_string())?;
+    }
+    let cursor = zip.finish().map_err(|e| e.to_string())?;
+    let bytes = cursor.into_inner();
+    let result_bytes = bytes.len();
+    Ok(ZipPack {
+        bytes,
+        original_bytes,
+        result_bytes,
+        over_budget,
+    })
+}
+
+const BATCH_WATCHDOG: Duration = Duration::from_secs(55);
+const BATCH_BUDGET: Duration = Duration::from_secs(50);
+
+async fn run_cpu_batch<T, E>(job: impl FnOnce() -> Result<T, E> + Send + 'static) -> Result<T, Response>
+where
+    T: Send + 'static,
+    E: ToString + Send + 'static,
+{
+    run_cpu_on(
+        &COMPRESS_SLOTS,
+        job,
+        SLOT_WAIT,
+        BATCH_WATCHDOG,
+        BATCH_BUDGET,
+        Arc::clone(&IN_FLIGHT),
+        MAX_IN_FLIGHT,
+    )
+    .await
+}
+
 pub async fn convert_upload(
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
     headers: HeaderMap,
@@ -177,7 +412,13 @@ pub async fn convert_upload(
     let format = OutFormat::parse_prefer_webp(field_str(&parts, "format"));
     let quality = ops::clamp_quality(field_u32(&parts, "quality").unwrap_or(80));
     let orig = orig_meta(&parts);
-    let (bytes, filename) = match gate_file(parts.file, &ip) {
+    let pro = crate::site::is_pro(&headers);
+    let max_bytes = if pro {
+        crate::site::PRO_MAX_BYTES
+    } else {
+        crate::site::FREE_MAX_BYTES
+    };
+    let (bytes, filename) = match gate_file(parts.file, &ip, max_bytes) {
         Ok(v) => v,
         Err(r) => return r,
     };
@@ -204,7 +445,13 @@ pub async fn resize_upload(
     let width = field_u32(&parts, "width").filter(|w| *w > 0);
     let height = field_u32(&parts, "height").filter(|h| *h > 0);
     let orig = orig_meta(&parts);
-    let (bytes, filename) = match gate_file(parts.file, &ip) {
+    let pro = crate::site::is_pro(&headers);
+    let max_bytes = if pro {
+        crate::site::PRO_MAX_BYTES
+    } else {
+        crate::site::FREE_MAX_BYTES
+    };
+    let (bytes, filename) = match gate_file(parts.file, &ip, max_bytes) {
         Ok(v) => v,
         Err(r) => return r,
     };
@@ -230,7 +477,13 @@ pub async fn remove_bg_upload(
     let format = OutFormat::parse_prefer_png(field_str(&parts, "format"));
     let tolerance = field_u32(&parts, "tolerance").unwrap_or(32).clamp(8, 90) as u8;
     let orig = orig_meta(&parts);
-    let (bytes, filename) = match gate_file(parts.file, &ip) {
+    let pro = crate::site::is_pro(&headers);
+    let max_bytes = if pro {
+        crate::site::PRO_MAX_BYTES
+    } else {
+        crate::site::FREE_MAX_BYTES
+    };
+    let (bytes, filename) = match gate_file(parts.file, &ip, max_bytes) {
         Ok(v) => v,
         Err(r) => return r,
     };
@@ -252,7 +505,13 @@ pub async fn colors_upload(
         Err(r) => return r,
     };
     let count = field_u32(&parts, "count").unwrap_or(6) as usize;
-    let (bytes, _) = match gate_file(parts.file, &ip) {
+    let pro = crate::site::is_pro(&headers);
+    let max_bytes = if pro {
+        crate::site::PRO_MAX_BYTES
+    } else {
+        crate::site::FREE_MAX_BYTES
+    };
+    let (bytes, _) = match gate_file(parts.file, &ip, max_bytes) {
         Ok(v) => v,
         Err(r) => return r,
     };
@@ -304,7 +563,11 @@ fn image_ok(result: ImageOut, filename: &str, orig: OrigMeta) -> Response {
     )
 }
 
-fn gate_file(file: Option<(Vec<u8>, String)>, ip: &str) -> Result<(Vec<u8>, String), Response> {
+fn gate_file(
+    file: Option<(Vec<u8>, String)>,
+    ip: &str,
+    max_bytes: usize,
+) -> Result<(Vec<u8>, String), Response> {
     let Some((bytes, filename)) = file else {
         return Err(fail(
             StatusCode::BAD_REQUEST,
@@ -314,10 +577,11 @@ fn gate_file(file: Option<(Vec<u8>, String)>, ip: &str) -> Result<(Vec<u8>, Stri
     if bytes.is_empty() {
         return Err(fail(StatusCode::BAD_REQUEST, "Empty file.".into()));
     }
-    if bytes.len() > MAX_UPLOAD_BYTES {
+    if bytes.len() > max_bytes {
+        let mb = max_bytes / (1024 * 1024);
         return Err(fail(
             StatusCode::PAYLOAD_TOO_LARGE,
-            "File is over 20 MB.".into(),
+            format!("File is over {mb} MB. A Pro key on /pricing allows 50 MB."),
         ));
     }
     if let Err(e) = reject_unsupported(&bytes) {
@@ -332,42 +596,110 @@ fn gate_file(file: Option<(Vec<u8>, String)>, ip: &str) -> Result<(Vec<u8>, Stri
     Ok((bytes, filename))
 }
 
+fn busy() -> Response {
+    fail(
+        StatusCode::SERVICE_UNAVAILABLE,
+        "The server is busy. Try again in a few seconds.".into(),
+    )
+}
+
+fn too_slow() -> Response {
+    fail(StatusCode::GATEWAY_TIMEOUT, CPU_TIMEOUT_MSG.into())
+}
+
 async fn run_cpu<T, E>(job: impl FnOnce() -> Result<T, E> + Send + 'static) -> Result<T, Response>
 where
     T: Send + 'static,
     E: ToString + Send + 'static,
 {
-    let Ok(permit) = tokio::time::timeout(Duration::from_secs(8), COMPRESS_SLOTS.acquire()).await
-    else {
-        return Err(fail(
-            StatusCode::SERVICE_UNAVAILABLE,
-            "The server is busy. Try again in a few seconds.".into(),
-        ));
-    };
-    let permit = match permit {
-        Ok(p) => p,
-        Err(_) => {
-            return Err(fail(
-                StatusCode::SERVICE_UNAVAILABLE,
-                "The server is busy. Try again in a few seconds.".into(),
-            ));
+    run_cpu_on(
+        &COMPRESS_SLOTS,
+        job,
+        SLOT_WAIT,
+        CPU_WATCHDOG,
+        CPU_BUDGET,
+        Arc::clone(&IN_FLIGHT),
+        MAX_IN_FLIGHT,
+    )
+    .await
+}
+
+fn try_begin_inflight(inflight: &AtomicUsize, max_inflight: usize) -> bool {
+    loop {
+        let n = inflight.load(Ordering::SeqCst);
+        if n >= max_inflight {
+            return false;
         }
+        if inflight
+            .compare_exchange(n, n + 1, Ordering::SeqCst, Ordering::SeqCst)
+            .is_ok()
+        {
+            return true;
+        }
+    }
+}
+
+async fn run_cpu_on<T, E>(
+    slots: &Semaphore,
+    job: impl FnOnce() -> Result<T, E> + Send + 'static,
+    slot_wait: Duration,
+    watchdog: Duration,
+    budget: Duration,
+    inflight: Arc<AtomicUsize>,
+    max_inflight: usize,
+) -> Result<T, Response>
+where
+    T: Send + 'static,
+    E: ToString + Send + 'static,
+{
+    let permit = match tokio::time::timeout(slot_wait, slots.acquire()).await {
+        Ok(Ok(p)) => p,
+        Ok(Err(_)) | Err(_) => return Err(busy()),
     };
-    let work = tokio::task::spawn_blocking(move || {
-        let _permit = permit;
-        job()
+    if !try_begin_inflight(inflight.as_ref(), max_inflight) {
+        drop(permit);
+        return Err(busy());
+    }
+
+    // Keep the permit on this future, not inside spawn_blocking. Dropping the
+    // JoinHandle cannot abort a blocking codec; holding the slot there made
+    // "busy" last until the thread finished — longer than the 504 claimed.
+    let mut work = tokio::task::spawn_blocking(move || {
+        with_cpu_deadline(Instant::now() + budget, job)
     });
-    match tokio::time::timeout(Duration::from_secs(25), work).await {
-        Err(_) => Err(fail(
-            StatusCode::GATEWAY_TIMEOUT,
-            "That image took too long. Try a smaller file.".into(),
-        )),
-        Ok(Err(_)) => Err(fail(
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "Processing failed.".into(),
-        )),
-        Ok(Ok(Err(e))) => Err(fail(StatusCode::UNPROCESSABLE_ENTITY, e.to_string())),
-        Ok(Ok(Ok(r))) => Ok(r),
+
+    match tokio::time::timeout(watchdog, &mut work).await {
+        Ok(Ok(Ok(r))) => {
+            inflight.fetch_sub(1, Ordering::SeqCst);
+            drop(permit);
+            Ok(r)
+        }
+        Ok(Ok(Err(e))) => {
+            inflight.fetch_sub(1, Ordering::SeqCst);
+            drop(permit);
+            let msg = e.to_string();
+            if msg == CPU_TIMEOUT_MSG {
+                Err(too_slow())
+            } else {
+                Err(fail(StatusCode::UNPROCESSABLE_ENTITY, msg))
+            }
+        }
+        Ok(Err(_)) => {
+            inflight.fetch_sub(1, Ordering::SeqCst);
+            drop(permit);
+            Err(fail(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Processing failed.".into(),
+            ))
+        }
+        Err(_) => {
+            drop(permit);
+            tokio::spawn(async move {
+                let _ = work.await;
+                inflight.fetch_sub(1, Ordering::SeqCst);
+            });
+            Err(too_slow())
+        }
     }
 }
 
@@ -527,6 +859,8 @@ fn cors<T: IntoResponse>(status: StatusCode, body: T) -> Response {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+    use std::sync::Arc;
 
     #[test]
     fn prefers_fly_client_ip_over_spoofed_xff() {
@@ -543,5 +877,106 @@ mod tests {
         headers.insert("fly-client-ip", HeaderValue::from_static("not-an-ip"));
         let peer: SocketAddr = "10.0.0.9:1".parse().unwrap();
         assert_eq!(client_ip(&headers, Some(peer)), "10.0.0.9");
+    }
+
+    #[tokio::test]
+    async fn timeout_frees_slot_while_blocking_work_continues() {
+        let slots = Semaphore::new(1);
+        let started = Arc::new(AtomicBool::new(false));
+        let flag = started.clone();
+        let inflight = Arc::new(AtomicUsize::new(0));
+        let err = run_cpu_on(
+            &slots,
+            move || {
+                flag.store(true, Ordering::SeqCst);
+                std::thread::sleep(Duration::from_millis(200));
+                Ok::<(), String>(())
+            },
+            Duration::from_millis(50),
+            Duration::from_millis(25),
+            Duration::from_secs(5),
+            Arc::clone(&inflight),
+            8,
+        )
+        .await
+        .unwrap_err();
+        assert_eq!(err.status(), StatusCode::GATEWAY_TIMEOUT);
+        assert_eq!(slots.available_permits(), 1);
+        assert!(started.load(Ordering::SeqCst));
+
+        let n = run_cpu_on(
+            &slots,
+            || Ok::<_, String>(7u8),
+            Duration::from_millis(40),
+            Duration::from_millis(200),
+            Duration::from_secs(5),
+            Arc::clone(&inflight),
+            8,
+        )
+        .await
+        .expect("slot should be free after the 504");
+        assert_eq!(n, 7);
+    }
+
+    #[tokio::test]
+    async fn slot_wait_times_out_when_full() {
+        let slots = Semaphore::new(1);
+        let _held = slots.acquire().await.unwrap();
+        let err = run_cpu_on(
+            &slots,
+            || Ok::<_, String>(()),
+            Duration::from_millis(20),
+            Duration::from_millis(50),
+            Duration::from_secs(1),
+            Arc::new(AtomicUsize::new(0)),
+            8,
+        )
+        .await
+        .unwrap_err();
+        assert_eq!(err.status(), StatusCode::SERVICE_UNAVAILABLE);
+    }
+
+    #[tokio::test]
+    async fn inflight_cap_rejects_before_a_fourth_blocking_job() {
+        let slots = Arc::new(Semaphore::new(4));
+        let inflight = Arc::new(AtomicUsize::new(0));
+        let slots_a = Arc::clone(&slots);
+        let inflight_a = Arc::clone(&inflight);
+        let first = tokio::spawn(async move {
+            run_cpu_on(
+                slots_a.as_ref(),
+                || {
+                    std::thread::sleep(Duration::from_millis(80));
+                    Ok::<(), String>(())
+                },
+                Duration::from_millis(50),
+                Duration::from_millis(400),
+                Duration::from_secs(5),
+                inflight_a,
+                1,
+            )
+            .await
+        });
+        let give_up = Instant::now() + Duration::from_millis(200);
+        while inflight.load(Ordering::SeqCst) == 0 {
+            if Instant::now() > give_up {
+                panic!("first job never took an inflight slot");
+            }
+            tokio::time::sleep(Duration::from_millis(2)).await;
+        }
+        let err = run_cpu_on(
+            slots.as_ref(),
+            || Ok::<_, String>(()),
+            Duration::from_millis(50),
+            Duration::from_millis(200),
+            Duration::from_secs(5),
+            Arc::clone(&inflight),
+            1,
+        )
+        .await
+        .unwrap_err();
+        assert_eq!(err.status(), StatusCode::SERVICE_UNAVAILABLE);
+        first.await.unwrap().expect("first job should finish");
+        assert_eq!(inflight.load(Ordering::SeqCst), 0);
     }
 }

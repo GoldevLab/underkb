@@ -206,26 +206,10 @@ body::after {
   padding: 0.7rem var(--page-pad-end) 0.7rem var(--page-pad);
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 0.45rem 0.85rem;
+  justify-content: center;
+  position: relative;
 }
 
-.tool-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.2rem 0.65rem;
-  margin-left: auto;
-}
-
-.tool-nav-link {
-  font-size: 0.8rem;
-  font-weight: 650;
-  text-decoration: none;
-  color: var(--muted);
-  padding: 0.2rem 0;
-}
-
-.tool-nav-link.is-active,
 .brand.is-active { color: var(--link-hover); }
 
 .brand {
@@ -255,7 +239,12 @@ body::after {
   letter-spacing: -0.03em;
 }
 
-.theme-wrap { margin-left: 0.15rem; }
+.theme-wrap {
+  position: absolute;
+  right: var(--page-pad-end);
+  top: 50%;
+  transform: translateY(-50%);
+}
 
 .theme-btn {
   appearance: none;
@@ -357,7 +346,9 @@ main {
 .hero-wrap {
   position: relative;
   overflow: hidden;
-  margin: -1.25rem calc(var(--page-pad) * -1) 0 calc(var(--page-pad-end) * -1);
+  margin-block-start: -1.25rem;
+  margin-inline-start: calc(var(--page-pad) * -1);
+  margin-inline-end: calc(var(--page-pad-end) * -1);
   padding: 1.25rem var(--page-pad-end) 0.25rem var(--page-pad);
   border-bottom: 1px solid var(--edge);
 }
@@ -639,6 +630,12 @@ select:focus-visible {
   color: inherit;
 }
 
+.swatch-chip {
+  display: block;
+  width: 100%;
+  height: 3.2rem;
+}
+
 [data-tool="colors"] .compare figure:last-of-type { display: none; }
 .swatch-meta {
   display: block;
@@ -647,8 +644,16 @@ select:focus-visible {
   line-height: 1.3;
 }
 
-@media (max-width: 720px) {
-  .tool-nav { margin-left: 0; width: 100%; }
+.hero-lead-es {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .result-name { margin: 0; font-weight: 700; }
@@ -717,6 +722,41 @@ select:focus-visible {
   padding: 0 var(--page-pad-end) 0.75rem var(--page-pad);
   color: var(--muted);
   font-size: 0.92rem;
+  text-align: center;
+}
+
+.seo-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.2rem 0.15rem;
+  margin: 0 0 0.75rem;
+}
+
+.seo-links a {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.seo-links a:hover,
+.seo-links a.is-active {
+  text-decoration: underline;
+  color: var(--link-hover);
+}
+
+.sister-apps-links {
+  margin: 0 0 0.65rem;
+}
+
+.sister-apps-links a {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.sister-apps-links a:hover {
+  text-decoration: underline;
 }
 
 .tool-pick { padding: 0.4rem 0 0.4rem; }
