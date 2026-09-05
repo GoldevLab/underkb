@@ -624,23 +624,27 @@
     root.replaceChildren(canvas);
     const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
-    const COUNT = 160;
-    const dots = Array.from({ length: COUNT }, () => ({
+    const COUNT = window.matchMedia("(max-width: 640px)").matches ? 48 : 84;
+    const pixels = Array.from({ length: COUNT }, () => ({
       x: Math.random(),
       y: Math.random(),
-      z: Math.random(),
-      s: 0.4 + Math.random() * 1.4,
-      p: Math.random() * Math.PI * 2,
+      z: 0.25 + Math.random() * 0.75,
+      size: 3 + Math.random() * 11,
+      min: 1.2 + Math.random() * 1.4,
+      shrink: 0.35 + Math.random() * 0.7,
+      vx: (Math.random() - 0.5) * 0.012,
+      vy: (Math.random() - 0.5) * 0.012,
     }));
     let w = 0;
     let h = 0;
     let pointerX = 0;
     let pointerY = 0;
     let raf = 0;
-    let accent = "#4ade80";
+    let last = 0;
+    let accent = "#34d399";
     const readAccent = () => {
       const cs = getComputedStyle(document.documentElement);
-      accent = (cs.getPropertyValue("--accent") || "#4ade80").trim() || "#4ade80";
+      accent = (cs.getPropertyValue("--accent") || "#34d399").trim() || "#34d399";
     };
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -666,19 +670,32 @@
       }
       if (document.hidden) {
         raf = 0;
+        last = 0;
         return;
       }
-      const time = t * 0.001;
+      const dt = Math.min(0.032, last ? (t - last) / 1000 : 0.016);
+      last = t;
       ctx.clearRect(0, 0, w, h);
       ctx.fillStyle = accent;
-      for (const d of dots) {
-        d.p += 0.002 * d.s;
-        const x = (d.x + Math.sin(time * d.s + d.p) * 0.03 + pointerX * 0.04 * d.z) * w;
-        const y = (d.y + Math.cos(time * 0.7 * d.s + d.p) * 0.025 + pointerY * 0.03 * d.z) * h;
-        ctx.globalAlpha = 0.18 + d.z * 0.35;
-        ctx.beginPath();
-        ctx.arc(x, y, 0.6 + d.z * 1.6, 0, Math.PI * 2);
-        ctx.fill();
+      for (const p of pixels) {
+        p.x += p.vx * dt * 10;
+        p.y += p.vy * dt * 10;
+        const dx = p.x - (pointerX + 0.5);
+        const dy = p.y - (pointerY + 0.5);
+        const near = dx * dx + dy * dy < 0.05;
+        p.size -= p.shrink * dt * (near ? 3.4 : 1.15);
+        if (p.size < p.min) {
+          p.size = 8 + Math.random() * 10;
+          p.x = Math.random();
+          p.y = Math.random();
+        }
+        if (p.x < -0.05) p.x = 1.04;
+        else if (p.x > 1.05) p.x = -0.04;
+        if (p.y < -0.05) p.y = 1.04;
+        else if (p.y > 1.05) p.y = -0.04;
+        ctx.globalAlpha = 0.16 + p.z * 0.4;
+        const s = p.size * (0.55 + p.z * 0.55);
+        ctx.fillRect(p.x * w - s / 2, p.y * h - s / 2, s, s);
       }
       raf = requestAnimationFrame(tick);
     };
@@ -696,6 +713,7 @@
     stopHero = () => {
       cancelAnimationFrame(raf);
       raf = 0;
+      last = 0;
       themeWatch.disconnect();
       window.removeEventListener("resize", resize);
       window.removeEventListener("pointermove", onMove);

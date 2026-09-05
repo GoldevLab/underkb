@@ -17,70 +17,6 @@ use resuma::prelude::*;
 use resuma::SeoKit;
 use serde_json::json;
 
-fn theme_picker() -> View {
-    view! {
-        <div class="theme-wrap">
-            <Popup id="themes" positions="bottom left top right" class="theme-popover">
-                <button
-                    slot="anchor"
-                    type="button"
-                    class="theme-btn"
-                    aria-haspopup="dialog"
-                    aria-label="Change site theme"
-                    title="Themes"
-                >
-                    <span class="theme-btn-wheel" aria-hidden="true"></span>
-                    <span class="theme-btn-label">"Theme"</span>
-                </button>
-                <div class="theme-popover-body" role="dialog" aria-label="Choose a theme">
-                    <p class="theme-popover-kicker">"Live themes"</p>
-                    <p class="theme-popover-lead">
-                        "Official Resuma palettes. Forest is the default — glass follows the tokens."
-                    </p>
-                    <div class="theme-grid" role="group" aria-label="Site palettes">
-                        <ThemeSwitch id="forest">
-                            <button type="button" class="theme-opt">
-                                <span class="theme-swatch" style="background: conic-gradient(#0c1410 0 120deg, #34d399 120deg 240deg, #6ee7b7 240deg 360deg)"></span>
-                                <span>"Forest"</span>
-                            </button>
-                        </ThemeSwitch>
-                        <ThemeSwitch id="paper">
-                            <button type="button" class="theme-opt">
-                                <span class="theme-swatch" style="background: conic-gradient(#eceff4 0 120deg, #2563eb 120deg 240deg, #0f172a 240deg 360deg)"></span>
-                                <span>"Paper"</span>
-                            </button>
-                        </ThemeSwitch>
-                        <ThemeSwitch id="slate">
-                            <button type="button" class="theme-opt">
-                                <span class="theme-swatch" style="background: conic-gradient(#f4efe6 0 120deg, #c2410c 120deg 240deg, #1c1917 240deg 360deg)"></span>
-                                <span>"Slate"</span>
-                            </button>
-                        </ThemeSwitch>
-                        <ThemeSwitch id="midnight">
-                            <button type="button" class="theme-opt">
-                                <span class="theme-swatch" style="background: conic-gradient(#0b1020 0 120deg, #818cf8 120deg 240deg, #e6e8ee 240deg 360deg)"></span>
-                                <span>"Midnight"</span>
-                            </button>
-                        </ThemeSwitch>
-                        <ThemeSwitch id="ember">
-                            <button type="button" class="theme-opt">
-                                <span class="theme-swatch" style="background: conic-gradient(#1a100c 0 120deg, #f59e0b 120deg 240deg, #e8a87c 240deg 360deg)"></span>
-                                <span>"Ember"</span>
-                            </button>
-                        </ThemeSwitch>
-                        <ThemeSwitch id="aurora">
-                            <button type="button" class="theme-opt">
-                                <span class="theme-swatch" style="background: conic-gradient(#0a1628 0 120deg, #22d3ee 120deg 240deg, #a78bfa 240deg 360deg)"></span>
-                                <span>"Aurora"</span>
-                            </button>
-                        </ThemeSwitch>
-                    </div>
-                </div>
-            </Popup>
-        </div>
-    }
-}
-
 fn chrome(body: View) -> View {
     view! {
         <div class="app">
@@ -95,7 +31,6 @@ fn chrome(body: View) -> View {
                         <span class="brand-mark" aria-hidden="true">"kB"</span>
                         <span class="brand-name">"UnderKb"</span>
                     </NavLink>
-                    {theme_picker()}
                     <span class="nav-progress" aria-hidden="true"></span>
                 </div>
             </header>
@@ -219,7 +154,7 @@ async fn main() -> std::io::Result<()> {
     // `with_seo_kit` owns keywords/author/theme-color meta, JSON-LD, and the
     // `/robots.txt` + `/llms.txt` routes (AI crawler policy included).
     let head = format!(
-        "<link rel=\"icon\" href=\"/icon.svg\" type=\"image/svg+xml\" /><script type=\"module\" src=\"/js/underkb.js?v=9\"></script>{}{}",
+        "<link rel=\"icon\" href=\"/icon.svg\" type=\"image/svg+xml\" /><script type=\"module\" src=\"/js/underkb.js?v=10\"></script>{}{}",
         ads::head_snippet(),
         crate::site::head_extras()
     );
@@ -242,8 +177,8 @@ async fn main() -> std::io::Result<()> {
         .with_head(head)
         .with_seo_kit(seo_kit())
         .with_html_theme(
-            HtmlTheme::new(["forest", "paper", "slate", "midnight", "ember", "aurora"])
-                .dark(["forest", "midnight", "ember", "aurora"])
+            HtmlTheme::new(["forest"])
+                .dark(["forest"])
                 .cookie("underkb_theme")
                 .storage_key("underkb-theme"),
         )
@@ -262,17 +197,17 @@ async fn main() -> std::io::Result<()> {
             background_color: "#0c1410".into(),
             start_url: "/".into(),
             scope: "/".into(),
-            cache_version: "ukb-6".into(),
+            cache_version: "ukb-7".into(),
             display: "standalone".into(),
             orientation: "any".into(),
             lang: "en".into(),
             icon_char: Some("k".into()),
-            // Must match the URL the page requests (`?v=9`), or the SW precache
+            // Must match the URL the page requests (`?v=10`), or the SW precache
             // never hits offline.
             precache_paths: vec![
                 "/themes.css".into(),
                 "/css/underkb.css".into(),
-                "/js/underkb.js?v=9".into(),
+                "/js/underkb.js?v=10".into(),
             ],
             shortcuts: vec![
                 PwaShortcut {
