@@ -747,6 +747,7 @@ select:focus-visible {
 
 .sister-apps-links {
   margin: 0 0 0.65rem;
+  padding: 0;
 }
 
 .sister-apps-links a {
@@ -757,6 +758,19 @@ select:focus-visible {
 
 .sister-apps-links a:hover {
   text-decoration: underline;
+  color: var(--link-hover);
+}
+
+.sister-apps {
+  margin: 2rem 0 1rem;
+}
+.sister-apps .tool-grid {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+}
+.sister-apps .tool-card {
+  min-block-size: 7.5rem;
 }
 
 .tool-pick { padding: 0.4rem 0 0.4rem; }

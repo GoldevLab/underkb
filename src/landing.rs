@@ -489,19 +489,96 @@ pub fn seo_footer_links() -> View {
     }
 }
 
-pub fn sister_apps_links() -> View {
+/// Canonical family order. Each app skips itself in the footer and home cards.
+const FAMILY: &[(&str, &str, &str)] = &[
+    (
+        "YouTubeForge",
+        "YouTube transcript, MP3, SRT, and translation.",
+        "https://youtubetotext.fly.dev",
+    ),
+    (
+        "UnderKb",
+        "Compress images to a real KB target. JPG, WebP, PNG.",
+        "https://underkb.fly.dev",
+    ),
+    (
+        "PDFForge",
+        "Merge, split, compress PDFs. JPG ↔ PDF and extract text.",
+        "https://pdfforge.fly.dev",
+    ),
+    (
+        "PlacaQR",
+        "3D-printable QR — stand, tile, keychain, or plaque.",
+        "https://placaqr.fly.dev",
+    ),
+    (
+        "Billloom",
+        "Invoice, quote, and receipt PDFs. No account, no watermark.",
+        "https://billloom.fly.dev",
+    ),
+];
+
+const SELF: &str = "UnderKb";
+
+pub fn sister_apps() -> View {
+    let cards = FAMILY
+        .iter()
+        .copied()
+        .filter(|(name, _, _)| *name != SELF)
+        .map(|(name, blurb, href)| {
+            let name = name.to_string();
+            let blurb = blurb.to_string();
+            let href = href.to_string();
+            view! {
+                <li>
+                    <a href={href} class="tool-card sister-card" rel="noopener">
+                        <h3 class="tool-card-title">{name}</h3>
+                        <p class="tool-card-blurb">{blurb}</p>
+                        <span class="tool-card-cta">"Open"</span>
+                    </a>
+                </li>
+            }
+        })
+        .collect::<Vec<_>>();
+
     view! {
-        <p class="sister-apps-links">
+        <nav class="sister-apps" aria-label="Other apps from us">
+            <p class="eyebrow">"Also from us"</p>
+            <h2>"Free tools, same idea"</h2>
+            <p class="hint">
+                "No account. Paste, convert, download. Transcripts, PDFs, 3D QR, and invoices."
+            </p>
+            <ul class="tool-grid">{cards}</ul>
+        </nav>
+    }
+}
+
+pub fn sister_apps_links() -> View {
+    let items = FAMILY
+        .iter()
+        .copied()
+        .filter(|(name, _, _)| *name != SELF)
+        .enumerate()
+        .map(|(i, (name, _, href))| {
+            let name = name.to_string();
+            let href = href.to_string();
+            if i == 0 {
+                view! { <a href={href} rel="noopener">{name}</a> }
+            } else {
+                view! {
+                    <span aria-hidden="true">" · "</span>
+                    <a href={href} rel="noopener">{name}</a>
+                }
+            }
+        })
+        .collect::<Vec<_>>();
+
+    view! {
+        <nav class="sister-apps-links" aria-label="Also from us">
             <span>"Also from us:"</span>
             " "
-            <a href="https://youtubetotext.fly.dev" rel="noopener">"YouTubeForge"</a>
-            <span aria-hidden="true">" · "</span>
-            <a href="https://placaqr.fly.dev" rel="noopener">"PlacaQR"</a>
-            <span aria-hidden="true">" · "</span>
-            <a href="https://pdfforge.fly.dev" rel="noopener">"PDFForge"</a>
-            <span aria-hidden="true">" · "</span>
-            <a href="https://billloom.fly.dev" rel="noopener">"Billloom"</a>
-        </p>
+            {items}
+        </nav>
     }
 }
 

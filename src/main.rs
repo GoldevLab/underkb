@@ -262,7 +262,7 @@ async fn main() -> std::io::Result<()> {
             background_color: "#0c1410".into(),
             start_url: "/".into(),
             scope: "/".into(),
-            cache_version: "ukb-5".into(),
+            cache_version: "ukb-6".into(),
             display: "standalone".into(),
             orientation: "any".into(),
             lang: "en".into(),

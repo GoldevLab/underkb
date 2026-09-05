@@ -71,6 +71,7 @@ pub fn page(_req: FlowRequest) -> View {
                 </div>
             </section>
             {crate::ads::slot("home-faq", "infeed")}
+            {crate::landing::sister_apps()}
         </main>
     }
 }
