@@ -16,13 +16,16 @@ pub fn page(_req: FlowRequest) -> View {
 
     view! {
         <main class="home-page home-hub" lang="en">
-            <section class="hero">
-                <p class="eyebrow">"Image tools"</p>
-                <h1>"What do you want to do with your photo?"</h1>
-                <p class="hero-lead">
-                    "Pick a tool, then drop the file there. No account, no watermark. Up to 20 MB."
-                </p>
-            </section>
+            <div class="hero-wrap">
+                <div class="hero-particles" data-hero-particles="" aria-hidden="true"></div>
+                <section class="hero">
+                    <p class="eyebrow">"Image tools"</p>
+                    <h1>"What do you want to do with your photo?"</h1>
+                    <p class="hero-lead">
+                        "Pick a tool, then drop the file there. No account, no watermark. Up to 20 MB."
+                    </p>
+                </section>
+            </div>
             {crate::ads::slot("home-hero", "infeed")}
             <section class="tool-pick" aria-labelledby="tools-title">
                 <h2 id="tools-title">"Tools"</h2>

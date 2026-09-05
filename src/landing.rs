@@ -186,6 +186,11 @@ impl Tool {
 }
 
 pub fn page(tool: Tool) -> View {
+    // Every tool page used to ship the homepage <title>/description: fatal for a
+    // keyword-targeted multi-page site. Stage per-page SEO on this response.
+    set_page_title(tool.title());
+    set_page_description(tool.description());
+
     let faq_ld = json!({
         "@context": "https://schema.org",
         "@type": "FAQPage",
@@ -238,18 +243,22 @@ pub fn page(tool: Tool) -> View {
 
     let more = more_tools(tool);
 
+    // Replace the site-wide kit JSON-LD (WebApplication + homepage FAQ) with this
+    // page's WebPage + FAQ, emitted in <head> with the CSP nonce — instead of a
+    // raw <script> inside <main> next to a second FAQPage block.
+    set_page_json_ld(json!([page_ld, faq_ld]).to_string());
+
     view! {
         <main class="home-page" lang="en">
-            {View::raw(format!(
-                r#"<script type="application/ld+json">{}</script><script type="application/ld+json">{}</script>"#,
-                page_ld, faq_ld
-            ))}
-            <section class="hero">
-                <p class="eyebrow">{tool.eyebrow()}</p>
-                <h1>{tool.h1()}</h1>
-                <p class="hero-lead">{tool.lead()}</p>
-                {form}
-            </section>
+            <div class="hero-wrap">
+                <div class="hero-particles" data-hero-particles="" aria-hidden="true"></div>
+                <section class="hero">
+                    <p class="eyebrow">{tool.eyebrow()}</p>
+                    <h1>{tool.h1()}</h1>
+                    <p class="hero-lead">{tool.lead()}</p>
+                    {form}
+                </section>
+            </div>
             {crate::ads::slot("landing-hero", "infeed")}
             <section class="howto" aria-labelledby="howto-title">
                 <h2 id="howto-title">"How to use it"</h2>

@@ -457,4 +457,77 @@
     requestAnimationFrame(tryBoot);
   });
   new MutationObserver(tryBoot).observe(document.documentElement, { childList: true, subtree: true });
+
+  const mountHeroParticles = () => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    document.querySelectorAll("[data-hero-particles]").forEach((root) => {
+      if (root.dataset.ready === "1") return;
+      root.dataset.ready = "1";
+      const canvas = document.createElement("canvas");
+      canvas.className = "hero-particles-canvas";
+      canvas.setAttribute("aria-hidden", "true");
+      root.appendChild(canvas);
+      const ctx = canvas.getContext("2d", { alpha: true });
+      if (!ctx) return;
+      const COUNT = 160;
+      const dots = Array.from({ length: COUNT }, () => ({
+        x: Math.random(),
+        y: Math.random(),
+        z: Math.random(),
+        s: 0.4 + Math.random() * 1.4,
+        p: Math.random() * Math.PI * 2,
+      }));
+      let w = 0;
+      let h = 0;
+      let pointerX = 0;
+      let pointerY = 0;
+      let raf = 0;
+      const color = () => {
+        const cs = getComputedStyle(document.documentElement);
+        return (cs.getPropertyValue("--accent") || "#4ade80").trim() || "#4ade80";
+      };
+      const resize = () => {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        w = root.clientWidth;
+        h = root.clientHeight;
+        if (!w || !h) return;
+        canvas.width = Math.floor(w * dpr);
+        canvas.height = Math.floor(h * dpr);
+        canvas.style.width = w + "px";
+        canvas.style.height = h + "px";
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      };
+      const onMove = (e) => {
+        const r = root.getBoundingClientRect();
+        pointerX = (e.clientX - r.left) / r.width - 0.5;
+        pointerY = (e.clientY - r.top) / r.height - 0.5;
+      };
+      const tick = (t) => {
+        const time = t * 0.001;
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = color();
+        for (const d of dots) {
+          d.p += 0.002 * d.s;
+          const x = (d.x + Math.sin(time * d.s + d.p) * 0.03 + pointerX * 0.04 * d.z) * w;
+          const y = (d.y + Math.cos(time * 0.7 * d.s + d.p) * 0.025 + pointerY * 0.03 * d.z) * h;
+          ctx.globalAlpha = 0.18 + d.z * 0.35;
+          ctx.beginPath();
+          ctx.arc(x, y, 0.6 + d.z * 1.6, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        raf = requestAnimationFrame(tick);
+      };
+      resize();
+      window.addEventListener("resize", resize, { passive: true });
+      window.addEventListener("pointermove", onMove, { passive: true });
+      raf = requestAnimationFrame(tick);
+    });
+  };
+  const tryHero = () => mountHeroParticles();
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", tryHero, { once: true });
+  } else {
+    tryHero();
+  }
+  document.addEventListener("resuma:navigate", () => requestAnimationFrame(tryHero));
 })();
