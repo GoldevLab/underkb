@@ -1,0 +1,22 @@
+:root { color-scheme: dark; font-family: system-ui, sans-serif; }
+body {
+  margin: 0;
+  width: 260px;
+  padding: 1rem;
+  background: #0c1410;
+  color: #e8f5ef;
+}
+h1 { margin: 0 0 0.45rem; font-size: 1.05rem; }
+p { margin: 0 0 0.75rem; font-size: 0.82rem; line-height: 1.4; color: #9aa8a0; }
+button {
+  width: 100%;
+  margin: 0 0 0.4rem;
+  padding: 0.5rem 0.7rem;
+  border: 0;
+  border-radius: 10px;
+  font: 600 0.88rem/1.2 inherit;
+  color: #04210f;
+  background: #34d399;
+  cursor: pointer;
+}
+button:last-child { margin-bottom: 0; }

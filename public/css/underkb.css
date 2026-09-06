@@ -204,6 +204,7 @@ body::after {
   max-width: var(--max);
   margin: 0 auto;
   padding: 0.7rem var(--page-pad-end) 0.7rem var(--page-pad);
+  padding-top: max(0.7rem, env(safe-area-inset-top, 0px));
   display: flex;
   align-items: center;
   justify-content: center;

@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "UnderKb",
+  "version": "1.0.0",
+  "description": "Compress photos to a real KB target. Opens UnderKb — convert, resize, palette. Free, no account.",
+  "homepage_url": "https://underkb.fly.dev/extension",
+  "permissions": ["contextMenus"],
+  "host_permissions": ["https://underkb.fly.dev/*"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "UnderKb image tools",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}

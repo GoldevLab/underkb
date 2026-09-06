@@ -485,6 +485,8 @@ pub fn seo_footer_links() -> View {
             <NavLink href="/terms">"Terms"</NavLink>
             <span aria-hidden="true">" · "</span>
             <NavLink href="/pricing">"Pro"</NavLink>
+            <span aria-hidden="true">" · "</span>
+            <NavLink href="/extension">"Extension"</NavLink>
         </nav>
     }
 }
@@ -510,6 +512,16 @@ const FAMILY: &[(&str, &str, &str)] = &[
         "PlacaQR",
         "3D-printable QR — stand, tile, keychain, or plaque.",
         "https://placaqr.fly.dev",
+    ),
+    (
+        "Linkprobe",
+        "Paste a URL. See which links work and which 404.",
+        "https://linkprobe.fly.dev",
+    ),
+    (
+        "Svgsport",
+        "Paste a page. Download every SVG as a zip.",
+        "https://svgsport.fly.dev",
     ),
     (
         "Billloom",

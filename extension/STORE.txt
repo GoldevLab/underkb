@@ -1,0 +1,14 @@
+Name: UnderKb
+Short (≤132): Compress photos to a KB target. Opens UnderKb. Free, no account.
+Category: Productivity
+
+Single purpose: Toolbar shortcuts to UnderKb tools. Right-click an image to open Compress.
+
+Privacy: https://underkb.fly.dev/privacy
+Support: https://underkb.fly.dev/extension
+
+Permission justification:
+- contextMenus: “Compress with UnderKb” on images
+- underkb.fly.dev: open the matching tool page
+
+Do not put AdSense in the extension. Ads are only on the website.

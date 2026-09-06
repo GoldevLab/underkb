@@ -17,7 +17,16 @@ use resuma::prelude::*;
 use resuma::SeoKit;
 use serde_json::json;
 
-fn chrome(body: View) -> View {
+fn chrome(body: View, ads: bool) -> View {
+    let footer_ad = if ads {
+        view! {
+            <div class="ad-rail ad-rail-end">
+                {crate::ads::slot("footer", "leaderboard")}
+            </div>
+        }
+    } else {
+        view! { <div hidden=""></div> }
+    };
     view! {
         <div class="app">
             <div class="liquid-orbs" aria-hidden="true">
@@ -35,6 +44,7 @@ fn chrome(body: View) -> View {
                 </div>
             </header>
             {body}
+            {footer_ad}
             <footer class="site-footer">
                 {crate::landing::seo_footer_links()}
                 {crate::landing::sister_apps_links()}
@@ -49,7 +59,7 @@ fn chrome(body: View) -> View {
 
 #[layout("/")]
 fn RootLayout() -> View {
-    chrome(view! { <Slot /> })
+    chrome(view! { <Slot /> }, true)
 }
 
 fn not_found() -> View {
@@ -61,7 +71,7 @@ fn not_found() -> View {
                 <NavLink href="/" class="btn btn-primary">"Go home"</NavLink>
             </p>
         </main>
-    })
+    }, false)
 }
 
 async fn redirect_tool_alias(target: &'static str) -> Redirect {
@@ -154,7 +164,7 @@ async fn main() -> std::io::Result<()> {
     // `with_seo_kit` owns keywords/author/theme-color meta, JSON-LD, and the
     // `/robots.txt` + `/llms.txt` routes (AI crawler policy included).
     let head = format!(
-        "<link rel=\"icon\" href=\"/icon.svg\" type=\"image/svg+xml\" /><script type=\"module\" src=\"/js/underkb.js?v=10\"></script>{}{}",
+        "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\" /><link rel=\"icon\" href=\"/icon.svg\" type=\"image/svg+xml\" /><link rel=\"icon\" href=\"/icons/favicon-32.png\" type=\"image/png\" sizes=\"32x32\" /><link rel=\"apple-touch-icon\" href=\"/icons/apple-touch-icon.png\" sizes=\"180x180\" /><script type=\"module\" src=\"/js/underkb.js?v=10\"></script>{}{}",
         ads::head_snippet(),
         crate::site::head_extras()
     );
@@ -182,7 +192,7 @@ async fn main() -> std::io::Result<()> {
                 .cookie("underkb_theme")
                 .storage_key("underkb-theme"),
         )
-        .with_stylesheet("/css/underkb.css")
+        .with_stylesheet("/css/underkb.css?v=r1")
         .static_asset("/icon.svg", ICON, "image/svg+xml");
     if let Some(body) = ads_txt {
         app = app.static_asset("/ads.txt", body, "text/plain; charset=utf-8");
@@ -197,7 +207,7 @@ async fn main() -> std::io::Result<()> {
             background_color: "#0c1410".into(),
             start_url: "/".into(),
             scope: "/".into(),
-            cache_version: "ukb-7".into(),
+            cache_version: "ukb-8".into(),
             display: "standalone".into(),
             orientation: "any".into(),
             lang: "en".into(),
@@ -206,8 +216,12 @@ async fn main() -> std::io::Result<()> {
             // never hits offline.
             precache_paths: vec![
                 "/themes.css".into(),
-                "/css/underkb.css".into(),
+                "/css/underkb.css?v=r1".into(),
                 "/js/underkb.js?v=10".into(),
+                "/icon.svg".into(),
+                "/icons/icon-192.png".into(),
+                "/icons/icon-512.png".into(),
+                "/icons/apple-touch-icon.png".into(),
             ],
             shortcuts: vec![
                 PwaShortcut {

@@ -7,6 +7,13 @@ pub fn contact_email() -> Option<String> {
         .filter(|s| s.contains('@') && !s.contains(' '))
 }
 
+pub fn chrome_store_url() -> Option<String> {
+    std::env::var("CHROME_STORE_URL")
+        .ok()
+        .map(|s| s.trim().to_string())
+        .filter(|s| s.starts_with("https://"))
+}
+
 pub fn head_extras() -> String {
     let mut out = String::new();
     if let Ok(v) = std::env::var("GSC_VERIFICATION") {

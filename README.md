@@ -51,6 +51,7 @@ After deploy, `/ads.txt` is served when `ADSENSE_CLIENT` is set. CSP stays repor
 | `ADSENSE_CLIENT` / `ADSENSE_SLOT*` | Live ads + `/ads.txt` |
 | `UNDERKB_PRO_KEYS` or `API_KEY` | 50 MB + batch ZIP (comma-separated, each ≥16 chars) |
 | `CONTACT_EMAIL` | Shown on `/privacy` and `/pricing` |
+| `CHROME_STORE_URL` | Store button on `/extension` |
 | `GSC_VERIFICATION` | Search Console meta |
 | `GA4_ID` (`G-…`) or `PLAUSIBLE_DOMAIN` | Analytics |
 

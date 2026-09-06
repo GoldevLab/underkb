@@ -15,6 +15,7 @@ impl FlowPageRegistry for PagesRegistry {
             ("/privacy", "privacy"),
             ("/terms", "terms"),
             ("/pricing", "pricing"),
+            ("/extension", "extension"),
         ]
     }
 
@@ -35,6 +36,7 @@ impl FlowPageRegistry for PagesRegistry {
             "privacy" => Some(super::privacy::page(req)),
             "terms" => Some(super::terms::page(req)),
             "pricing" => Some(super::pricing::page(req)),
+            "extension" => Some(super::extension::page(req)),
             _ => None,
         }
     }

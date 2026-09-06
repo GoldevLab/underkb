@@ -346,6 +346,7 @@ fn cap_dimensions(img: DynamicImage) -> DynamicImage {
     img.resize(nw, nh, FilterType::Triangle)
 }
 
+#[cfg_attr(not(test), allow(dead_code))]
 pub(crate) fn encode(img: &DynamicImage, format: OutFormat, quality: u8) -> Result<Vec<u8>, String> {
     check_cpu_deadline()?;
     match format {

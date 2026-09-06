@@ -1,6 +1,7 @@
 pub mod comprimir_imagen_kb;
 pub mod convertir_jpg_a_webp;
 pub mod extraer_colores_imagen;
+pub mod extension;
 pub mod index;
 pub mod pricing;
 pub mod privacy;
