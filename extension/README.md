@@ -1,11 +1,9 @@
-# Chrome extension (UnderKb)
+Publish: zip this folder. Listing copy: STORE.txt. Privacy: https://under200kb.com/privacy
 
-Load unpacked: chrome://extensions → Developer mode → Load unpacked → this folder.
+Domain is `under200kb.com`. Keep `config.js` (`SITE`) and `manifest.json` host permissions in sync with Fly `SITE_URL`.
 
-Publish: zip this folder. Listing copy: STORE.txt. Privacy: https://underkb.fly.dev/privacy
-
-After you buy a domain:
-1. Fly `SITE_URL=https://YOUR.DOMAIN`
+After domain changes:
+1. Fly `SITE_URL=https://under200kb.com`
 2. Edit `config.js` and `manifest.json` (`homepage_url`, `host_permissions`)
 3. Fly `CHROME_STORE_URL=…` when the listing is live
 4. AdSense stays on the website (`ADSENSE_CLIENT` / `ADSENSE_SLOT*`) — never in this extension

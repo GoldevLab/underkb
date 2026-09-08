@@ -3,9 +3,9 @@
   "name": "UnderKb",
   "version": "1.0.0",
   "description": "Compress photos to a real KB target. Opens UnderKb — convert, resize, palette. Free, no account.",
-  "homepage_url": "https://underkb.fly.dev/extension",
+  "homepage_url": "https://under200kb.com/extension",
   "permissions": ["contextMenus"],
-  "host_permissions": ["https://underkb.fly.dev/*"],
+  "host_permissions": ["https://under200kb.com/*"],
   "background": {
     "service_worker": "background.js",
     "type": "module"

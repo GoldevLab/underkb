@@ -353,7 +353,7 @@ pub fn public_origin() -> String {
         .ok()
         .map(|s| s.trim().trim_end_matches('/').to_string())
         .filter(|s| s.starts_with("http://") || s.starts_with("https://"))
-        .unwrap_or_else(|| "https://underkb.fly.dev".into())
+        .unwrap_or_else(|| "https://under200kb.com".into())
 }
 
 pub fn canonical_url(path: &str) -> String {
@@ -496,12 +496,12 @@ const FAMILY: &[(&str, &str, &str)] = &[
     (
         "YouTubeForge",
         "YouTube transcript, MP3, SRT, and translation.",
-        "https://youtubetotext.fly.dev",
+        "https://forgeyt.com",
     ),
     (
         "UnderKb",
         "Compress images to a real KB target. JPG, WebP, PNG.",
-        "https://underkb.fly.dev",
+        "https://under200kb.com",
     ),
     (
         "PDFForge",

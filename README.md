@@ -28,7 +28,7 @@ APIs (multipart `file`): `POST /api/compress` (`target_kb`, `format`), `POST /ap
 
 On a phone, Share appears after a successful file when the browser can share that file.
 
-Live: https://underkb.fly.dev — Fly org Gravitad, region `dfw`. Push to `main` deploys via GitHub Actions.
+Live: [under200kb.com](https://under200kb.com) (also [underkb.fly.dev](https://underkb.fly.dev)). Canonical: `SITE_URL=https://under200kb.com`.
 
 ## Google AdSense
 
