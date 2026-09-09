@@ -192,8 +192,23 @@ async fn main() -> std::io::Result<()> {
                 .cookie("underkb_theme")
                 .storage_key("underkb-theme"),
         )
-        .with_stylesheet("/css/underkb.css?v=r1")
+        .with_stylesheet("/css/underkb.css?v=r2")
         .static_asset("/icon.svg", ICON, "image/svg+xml");
+    {
+        let contact = crate::site::contact_email()
+            .map(|e| format!("Contact: mailto:{e}\n"))
+            .unwrap_or_default();
+        let body = format!(
+            "{contact}Canonical: https://under200kb.com/.well-known/security.txt\nPreferred-Languages: en\nExpires: 2027-12-31T23:59:59Z\n"
+        );
+        let leaked: &'static [u8] = Box::leak(body.into_bytes().into_boxed_slice());
+        app = app.static_asset(
+            "/.well-known/security.txt",
+            leaked,
+            "text/plain; charset=utf-8",
+        );
+    }
+
     if let Some(body) = ads_txt {
         app = app.static_asset("/ads.txt", body, "text/plain; charset=utf-8");
     }
@@ -216,7 +231,7 @@ async fn main() -> std::io::Result<()> {
             // never hits offline.
             precache_paths: vec![
                 "/themes.css".into(),
-                "/css/underkb.css?v=r1".into(),
+                "/css/underkb.css?v=r2".into(),
                 "/js/underkb.js?v=10".into(),
                 "/icon.svg".into(),
                 "/icons/icon-192.png".into(),

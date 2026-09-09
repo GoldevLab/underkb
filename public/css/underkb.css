@@ -1,6 +1,4 @@
 @import url("/themes.css");
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
-
 /* Forest fallback until HtmlTheme boot writes html[data-theme]. */
 :root {
   color-scheme: dark;
@@ -57,7 +55,7 @@
   --glass-highlight: linear-gradient(145deg, rgba(52, 211, 153, 0.14), rgba(255, 255, 255, 0.02));
   --glass-blur: 42px;
   --glass-saturate: 180%;
-  --sans: "Inter", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --sans: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
   --radius: 20px;
   --radius-btn: 14px;
   --liquid-a: 58% 42% 32% 68% / 58% 38% 62% 42%;

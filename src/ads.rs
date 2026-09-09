@@ -61,14 +61,37 @@ fn slot_id(placement: &str, size: &str) -> Option<String> {
 }
 
 pub fn head_snippet() -> String {
+    // Tiny deferred loader — AdSense after engagement / long idle (monitor TBT).
     match client_id() {
         Some(id) => format!(
-            r#"<link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin="anonymous" />
-<link rel="preconnect" href="https://googleads.g.doubleclick.net" crossorigin="anonymous" />
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={id}" crossorigin="anonymous"></script>
-<script type="module" src="/js/underkb-ads.js"></script>"#
+            r#"<link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+<link rel="dns-prefetch" href="https://googleads.g.doubleclick.net" />
+<meta name="ukb-adsense-client" content="{id}" />
+<script>
+(function(){{
+  function load(){{
+    if(window.__ukbAdsJs)return;
+    window.__ukbAdsJs=1;
+    var s=document.createElement('script');
+    s.type='module';
+    s.src='/js/underkb-ads.js?v=3';
+    s.fetchPriority='low';
+    document.head.appendChild(s);
+  }}
+  function arm(){{
+    var start=function(){{load();}};
+    ['pointerdown','keydown','touchstart','scroll'].forEach(function(e){{
+      window.addEventListener(e,start,{{once:true,passive:true}});
+    }});
+    if('requestIdleCallback' in window)requestIdleCallback(start,{{timeout:12000}});
+    else window.addEventListener('load',function(){{setTimeout(start,8000);}},{{once:true}});
+  }}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',arm,{{once:true}});
+  else arm();
+}})();
+</script>"#
         ),
-        None => r#"<script type="module" src="/js/underkb-ads.js"></script>"#.into(),
+        None => String::new(),
     }
 }
 

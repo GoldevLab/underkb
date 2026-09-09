@@ -97,9 +97,39 @@ pub fn head_extras() -> String {
                 .bytes()
                 .all(|b| b.is_ascii_alphanumeric() || b == b'-')
         {
-            out.push_str(&format!(
-                r#"<script async src="https://www.googletagmanager.com/gtag/js?id={id}"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){{dataLayer.push(arguments);}}gtag('js',new Date());gtag('config','{id}');</script>"#
+                        out.push_str(&format!(
+                r#"<link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+<script>
+(function(){{
+  var id={id:?};
+  function load(){{
+    if(window.__goldevGaLoaded)return;
+    window.__goldevGaLoaded=1;
+    var s=document.createElement('script');
+    s.async=true;
+    s.fetchPriority='low';
+    s.src='https://www.googletagmanager.com/gtag/js?id='+id;
+    s.onload=function(){{
+      window.dataLayer=window.dataLayer||[];
+      function gtag(){{dataLayer.push(arguments);}}
+      window.gtag=gtag;
+      gtag('js',new Date());
+      gtag('config',id,{{send_page_view:true}});
+    }};
+    document.head.appendChild(s);
+  }}
+  function arm(){{
+    var start=function(){{load();}};
+    ['pointerdown','keydown','touchstart','scroll'].forEach(function(e){{
+      window.addEventListener(e,start,{{once:true,passive:true}});
+    }});
+    if('requestIdleCallback' in window)requestIdleCallback(start,{{timeout:12000}});
+    else window.addEventListener('load',function(){{setTimeout(start,8000);}},{{once:true}});
+  }}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',arm,{{once:true}});
+  else arm();
+}})();
+</script>"#
             ));
         }
     }
