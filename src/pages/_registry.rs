@@ -16,6 +16,12 @@ impl FlowPageRegistry for PagesRegistry {
             ("/terms", "terms"),
             ("/pricing", "pricing"),
             ("/extension", "extension"),
+            ("/guides", "guides"),
+            ("/guides/compress-image-to-200kb", "guide_compress"),
+            ("/guides/jpg-to-webp", "guide_webp"),
+            ("/guides/resize-image", "guide_resize"),
+            ("/guides/remove-white-background", "guide_background"),
+            ("/admin", "admin"),
         ]
     }
 
@@ -37,6 +43,12 @@ impl FlowPageRegistry for PagesRegistry {
             "terms" => Some(super::terms::page(req)),
             "pricing" => Some(super::pricing::page(req)),
             "extension" => Some(super::extension::page(req)),
+            "guides" => Some(super::guides::page(req)),
+            "guide_compress" => Some(super::guide_compress::page(req)),
+            "guide_webp" => Some(super::guide_webp::page(req)),
+            "guide_resize" => Some(super::guide_resize::page(req)),
+            "guide_background" => Some(super::guide_background::page(req)),
+            "admin" => Some(super::admin::page(req)),
             _ => None,
         }
     }

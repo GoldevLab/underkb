@@ -516,6 +516,9 @@
           throw new Error(r.status === 413 ? "File is too large for the server." : r.status === 402 ? "A Pro key is required for batch ZIP. See /pricing." : r.status === 429 ? "Too many requests. Wait a minute." : "Request failed.");
         }
         if (!data.ok) throw new Error(data.error || "Request failed.");
+        if (typeof window.ukbEvent === "function") {
+          window.ukbEvent("job_complete", { tool: tool });
+        }
         const before = result?.querySelector("[data-before]");
         const img = result?.querySelector("[data-preview]");
         const link = download;
@@ -794,4 +797,16 @@
     if (!document.hidden) pullStats();
   });
   document.addEventListener("resuma:navigate", () => pullStats());
+})();
+
+(() => {
+  document.addEventListener("resuma:navigate", () => {
+    document.documentElement.classList.remove("is-navigating");
+  });
+  document.addEventListener("click", (e) => {
+    const el = e.target instanceof Element ? e.target.closest("a[data-r-nav]") : null;
+    if (el && el.getAttribute("href")) {
+      document.documentElement.classList.add("is-navigating");
+    }
+  }, true);
 })();

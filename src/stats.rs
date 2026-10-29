@@ -140,6 +140,10 @@ fn now_secs() -> u64 {
         .unwrap_or(0)
 }
 
+pub fn remote_ready() -> bool {
+    REMOTE.get().is_some()
+}
+
 pub async fn init() {
     let Some((url, token)) = turso_config() else {
         return;

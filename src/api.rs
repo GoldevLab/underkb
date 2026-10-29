@@ -135,7 +135,12 @@ fn fail(status: StatusCode, error: String) -> Response {
     cors(status, Json(ErrBody { ok: false, error }))
 }
 
-pub async fn stats() -> impl IntoResponse {
+pub async fn stats(headers: HeaderMap) -> Response {
+    if !crate::admin_gate::cookie_session_valid(
+        headers.get(header::COOKIE).and_then(|v| v.to_str().ok()),
+    ) {
+        return StatusCode::NOT_FOUND.into_response();
+    }
     let body = serde_json::to_string(&crate::stats::snapshot()).unwrap_or_else(|_| "{}".into());
     let mut headers = HeaderMap::new();
     headers.insert(
@@ -150,7 +155,7 @@ pub async fn stats() -> impl IntoResponse {
         header::HeaderName::from_static("x-robots-tag"),
         HeaderValue::from_static("noindex"),
     );
-    (StatusCode::OK, headers, body)
+    (StatusCode::OK, headers, body).into_response()
 }
 
 pub async fn preflight() -> Response {

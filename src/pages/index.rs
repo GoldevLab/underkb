@@ -53,6 +53,11 @@ pub fn page(_req: FlowRequest) -> View {
                 </p>
                 <div class="tool-grid">{cards}</div>
             </section>
+            <section class="tool-pick" aria-labelledby="guides-title">
+                <h2 id="guides-title">"Guides"</h2>
+                <p class="hint">"The same jobs, written out: 200 KB, WebP, resize, and a white background."</p>
+                {crate::guides::home_strip()}
+            </section>
             <section class="faq" aria-labelledby="faq-title">
                 <h2 id="faq-title">"FAQ"</h2>
                 <div class="faq-list">

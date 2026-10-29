@@ -74,6 +74,34 @@ fn encode_query(s: &str) -> String {
     out
 }
 
+pub fn request_is_admin() -> bool {
+    current_request()
+        .map(|req| crate::admin_gate::cookie_session_valid(req.header("cookie")))
+        .unwrap_or(false)
+}
+
+pub fn admin_cookie_header() -> String {
+    session_cookie(
+        &crate::admin_gate::issue_admin_session(),
+        crate::admin_gate::ADMIN_SESSION_SECS as i64,
+    )
+}
+
+pub fn admin_clear_cookie() -> String {
+    session_cookie("", 0)
+}
+
+fn session_cookie(value: &str, max_age: i64) -> String {
+    let mut header = format!(
+        "{}={value}; Path=/; Max-Age={max_age}; HttpOnly; SameSite=Lax",
+        crate::admin_gate::ADMIN_COOKIE
+    );
+    if crate::landing::public_origin().starts_with("https://") {
+        header.push_str("; Secure");
+    }
+    header
+}
+
 pub fn head_extras() -> String {
     let mut out = String::new();
     if let Ok(v) = std::env::var("GSC_VERIFICATION") {
@@ -102,6 +130,12 @@ pub fn head_extras() -> String {
 <script>
 (function(){{
   var id={id:?};
+  window.__ukbQueue=window.__ukbQueue||[];
+  window.ukbEvent=function(name, params){{
+    params=params||{{}};
+    if(window.gtag){{window.gtag('event', name, params);return;}}
+    window.__ukbQueue.push([name, params]);
+  }};
   function load(){{
     if(window.__goldevGaLoaded)return;
     window.__goldevGaLoaded=1;
@@ -115,6 +149,8 @@ pub fn head_extras() -> String {
       window.gtag=gtag;
       gtag('js',new Date());
       gtag('config',id,{{send_page_view:true}});
+      (window.__ukbQueue||[]).forEach(function(item){{gtag('event', item[0], item[1]);}});
+      window.__ukbQueue=[];
     }};
     document.head.appendChild(s);
   }}

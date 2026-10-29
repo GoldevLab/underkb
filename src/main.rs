@@ -1,8 +1,11 @@
 //! UnderKb — compress images under a kilobyte budget (Resuma Flow).
 
+mod actions;
+mod admin_gate;
 mod ads;
 mod api;
 mod compress;
+mod guides;
 mod landing;
 mod ops;
 mod site;
@@ -23,16 +26,30 @@ fn page_shows_ads() -> bool {
         .unwrap_or_else(|| "/".into());
     let trimmed = path.trim_end_matches('/');
     let path = if trimmed.is_empty() { "/" } else { trimmed };
-    !matches!(path, "/privacy" | "/terms" | "/pricing")
+    !matches!(path, "/privacy" | "/terms" | "/pricing" | "/admin")
 }
 
 fn chrome(body: View, ads: bool) -> View {
-    let activity = crate::stats::snapshot();
-    let n_compress = crate::stats::grouped(activity.compress);
-    let n_convert = crate::stats::grouped(activity.convert);
-    let n_resize = crate::stats::grouped(activity.resize);
-    let n_background = crate::stats::grouped(activity.background);
-    let n_colors = crate::stats::grouped(activity.colors);
+    let stats_bar = if crate::site::request_is_admin() {
+        let activity = crate::stats::snapshot();
+        let n_compress = crate::stats::grouped(activity.compress);
+        let n_convert = crate::stats::grouped(activity.convert);
+        let n_resize = crate::stats::grouped(activity.resize);
+        let n_background = crate::stats::grouped(activity.background);
+        let n_colors = crate::stats::grouped(activity.colors);
+        view! {
+            <div class="live-stats" data-live-stats="" aria-live="polite" aria-label="Completed jobs">
+                <span class="live-dot" aria-hidden="true"></span>
+                <span class="live-stat">"Compress "<strong data-stat="compress">{n_compress}</strong></span>
+                <span class="live-stat">"Convert "<strong data-stat="convert">{n_convert}</strong></span>
+                <span class="live-stat">"Resize "<strong data-stat="resize">{n_resize}</strong></span>
+                <span class="live-stat">"Background "<strong data-stat="background">{n_background}</strong></span>
+                <span class="live-stat">"Colors "<strong data-stat="colors">{n_colors}</strong></span>
+            </div>
+        }
+    } else {
+        view! { <div hidden=""></div> }
+    };
     let footer_ad = if ads {
         view! {
             <div class="ad-rail ad-rail-end">
@@ -55,15 +72,6 @@ fn chrome(body: View, ads: bool) -> View {
                         <span class="brand-mark" aria-hidden="true">"kB"</span>
                         <span class="brand-name">"UnderKb"</span>
                     </NavLink>
-                    <div class="live-stats" data-live-stats="" aria-live="polite" aria-label="Completed jobs">
-                        <span class="live-dot" aria-hidden="true"></span>
-                        <span class="live-stat">"Compress "<strong data-stat="compress">{n_compress}</strong></span>
-                        <span class="live-stat">"Convert "<strong data-stat="convert">{n_convert}</strong></span>
-                        <span class="live-stat">"Resize "<strong data-stat="resize">{n_resize}</strong></span>
-                        <span class="live-stat">"Background "<strong data-stat="background">{n_background}</strong></span>
-                        <span class="live-stat">"Colors "<strong data-stat="colors">{n_colors}</strong></span>
-                    </div>
-                    <span class="nav-progress" aria-hidden="true"></span>
                 </div>
                 <nav class="site-nav" aria-label="Tools">
                     <NavLink href="/comprimir-imagen-kb" class="site-nav-link" activeClass="is-active">"Compress to KB"</NavLink>
@@ -71,11 +79,14 @@ fn chrome(body: View, ads: bool) -> View {
                     <NavLink href="/redimensionar-imagen" class="site-nav-link" activeClass="is-active">"Resize"</NavLink>
                     <NavLink href="/quitar-fondo" class="site-nav-link" activeClass="is-active">"Remove background"</NavLink>
                     <NavLink href="/extraer-colores-imagen" class="site-nav-link" activeClass="is-active">"Colors"</NavLink>
+                    <NavLink href="/guides" class="site-nav-link" activeClass="is-active">"Guides"</NavLink>
                 </nav>
+                <span class="nav-progress" aria-hidden="true"></span>
             </header>
             {body}
             {footer_ad}
             <footer class="site-footer">
+                {stats_bar}
                 {crate::landing::seo_footer_links()}
                 {crate::landing::sister_apps_links()}
                 <p>
@@ -130,7 +141,7 @@ fn seo_kit() -> SeoKit {
         ),
         (
             "SEO landings".into(),
-            "/comprimir-imagen-kb, /convertir-jpg-a-webp, /redimensionar-imagen, /quitar-fondo, /extraer-colores-imagen. English aliases redirect to those. /privacy /terms /pricing.".into(),
+            "/comprimir-imagen-kb, /convertir-jpg-a-webp, /redimensionar-imagen, /quitar-fondo, /extraer-colores-imagen. Guides: /guides, /guides/compress-image-to-200kb, /guides/jpg-to-webp, /guides/resize-image, /guides/remove-white-background. /privacy /terms /pricing. /admin is private.".into(),
         ),
         (
             "API".into(),
@@ -139,7 +150,7 @@ fn seo_kit() -> SeoKit {
     ];
     // Temporary downloads and JSON APIs are not pages. Pricing stays crawlable
     // so its noindex can be seen; it is already out of the sitemap.
-    kit.ai.disallow = vec!["/api/".into(), "/d/".into()];
+    kit.ai.disallow = vec!["/api/".into(), "/d/".into(), "/admin".into()];
     kit
 }
 
@@ -162,7 +173,7 @@ async fn main() -> std::io::Result<()> {
     // `with_seo_kit` owns keywords/author/theme-color meta, JSON-LD, and the
     // `/robots.txt` + `/llms.txt` routes (AI crawler policy included).
     let head = format!(
-        "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\" /><link rel=\"icon\" href=\"/icon.svg\" type=\"image/svg+xml\" /><link rel=\"icon\" href=\"/icons/favicon-32.png\" type=\"image/png\" sizes=\"32x32\" /><link rel=\"apple-touch-icon\" href=\"/icons/apple-touch-icon.png\" sizes=\"180x180\" /><script type=\"module\" src=\"/js/underkb.js?v=12\"></script>{}{}",
+        "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\" /><link rel=\"icon\" href=\"/icon.svg\" type=\"image/svg+xml\" /><link rel=\"icon\" href=\"/icons/favicon-32.png\" type=\"image/png\" sizes=\"32x32\" /><link rel=\"apple-touch-icon\" href=\"/icons/apple-touch-icon.png\" sizes=\"180x180\" /><script type=\"module\" src=\"/js/underkb.js?v=14\"></script>{}{}",
         ads::head_snippet(),
         crate::site::head_extras()
     );
@@ -184,14 +195,14 @@ async fn main() -> std::io::Result<()> {
         .with_og_image("/cover.png")
         .with_head(head)
         .with_seo_kit(seo_kit())
-        .with_sitemap_exclude(["/pricing"])
+        .with_sitemap_exclude(["/pricing", "/admin"])
         .with_html_theme(
             HtmlTheme::new(["forest"])
                 .dark(["forest"])
                 .cookie("underkb_theme")
                 .storage_key("underkb-theme"),
         )
-        .with_stylesheet("/css/underkb.css?v=r5")
+        .with_stylesheet("/css/underkb.css?v=r7")
         .static_asset("/icon.svg", ICON, "image/svg+xml");
     {
         let contact = crate::site::contact_email()
@@ -221,7 +232,7 @@ async fn main() -> std::io::Result<()> {
             background_color: "#0c1410".into(),
             start_url: "/".into(),
             scope: "/".into(),
-            cache_version: "ukb-12".into(),
+            cache_version: "ukb-14".into(),
             display: "standalone".into(),
             orientation: "any".into(),
             lang: "en".into(),
@@ -230,8 +241,8 @@ async fn main() -> std::io::Result<()> {
             // never hits offline.
             precache_paths: vec![
                 "/themes.css".into(),
-                "/css/underkb.css?v=r5".into(),
-                "/js/underkb.js?v=12".into(),
+                "/css/underkb.css?v=r7".into(),
+                "/js/underkb.js?v=14".into(),
                 "/icon.svg".into(),
                 "/icons/icon-192.png".into(),
                 "/icons/icon-512.png".into(),

@@ -191,6 +191,8 @@ body::after {
   position: sticky;
   top: 0;
   z-index: 20;
+  container-type: scroll-state;
+  container-name: site-header;
   background: var(--header-bg);
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
@@ -243,11 +245,10 @@ body::after {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 0.2rem 0.7rem;
-  margin: 0;
-  max-width: min(36rem, 68%);
-  font-size: 0.72rem;
+  margin: 0 0 0.85rem;
+  font-size: 0.78rem;
   line-height: 1.2;
   color: var(--muted);
 }
@@ -277,12 +278,7 @@ body::after {
 }
 
 @media (max-width: 720px) {
-  .header-inner {
-    flex-wrap: wrap;
-  }
   .live-stats {
-    flex: 1 1 100%;
-    max-width: none;
     flex-wrap: nowrap;
     justify-content: flex-start;
     overflow-x: auto;
@@ -291,8 +287,53 @@ body::after {
   .live-stats::-webkit-scrollbar { display: none; }
 }
 
+.site-header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: color-mix(in srgb, var(--accent) 70%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+
+@container site-header scroll-state(stuck: top) {
+  .site-header::after {
+    opacity: 1;
+  }
+}
+
+.nav-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  transform: scaleX(0.2);
+  transform-origin: center;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+html.is-navigating .nav-progress {
+  opacity: 1;
+  animation: ukb-progress 0.9s ease-in-out infinite;
+}
+
+@keyframes ukb-progress {
+  0% { transform: scaleX(0.18); opacity: 0.35; }
+  50% { transform: scaleX(1); opacity: 1; }
+  100% { transform: scaleX(0.18); opacity: 0.35; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .live-dot { animation: none; }
+  html.is-navigating .nav-progress { animation: none; }
 }
 
 .site-nav {
@@ -764,6 +805,34 @@ select:focus-visible {
   min-block-size: 7.5rem;
 }
 
+.guide-article { display: grid; gap: 0.35rem; }
+.guide-section h2 { margin: 1.1rem 0 0.35rem; font-size: 1.15rem; }
+.guide-section p { margin: 0; color: var(--muted); }
+.guide-links { margin: 0.4rem 0 1rem; padding-left: 1.1rem; }
+.guide-links a { color: var(--primary); font-weight: 600; }
+.guide-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0 0; }
+.related-grid {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+}
+.related-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem 1.05rem;
+  text-decoration: none;
+  color: var(--text);
+  background: var(--glass-fill);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius);
+}
+.related-card span { color: var(--muted); font-size: 0.92rem; }
+.related-card:hover { border-color: color-mix(in srgb, var(--accent) 55%, var(--border)); }
+
 .tool-pick { padding: 0.4rem 0 0.4rem; }
 .tool-pick h2 { margin: 0 0 0.75rem; }
 
@@ -873,6 +942,50 @@ select:focus-visible {
 }
 
 .content-section { padding: 1.5rem 0 3rem; }
+
+.admin-page {
+  display: grid;
+  gap: 1rem;
+}
+.admin-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.75rem;
+}
+.admin-stat {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 0.85rem 1rem;
+}
+.admin-stat-value {
+  margin: 0;
+  font-size: 1.6rem;
+  font-variant-numeric: tabular-nums;
+}
+.admin-error { color: var(--danger); }
+.admin-login {
+  display: grid;
+  gap: 0.85rem;
+  max-width: 24rem;
+}
+.admin-login input {
+  font: inherit;
+  font-size: 1rem;
+  min-height: 3rem;
+  padding: 0.4rem 0.65rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--panel-input);
+  color: var(--text);
+}
 
 @media (max-width: 520px) {
   .controls { grid-template-columns: 1fr; }

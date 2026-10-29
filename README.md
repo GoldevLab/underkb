@@ -56,5 +56,10 @@ After deploy, `/ads.txt` is served when `ADSENSE_CLIENT` is set. CSP stays repor
 | `GA4_ID` (`G-…`) or `PLAUSIBLE_DOMAIN` | Analytics |
 | `TURSO_DATABASE_URL` | libSQL URL. Tool counters increment here from the server. |
 | `TURSO_AUTH_TOKEN` | Turso read-write token. Server only. Never put it in git or in the page. |
+| `GATE_SECRET` | Optional HMAC key for the `/admin` cookie. If unset, the server writes one under the data volume. |
+
+`/admin` is a private session. Public pages hide the job counters. The password stays in the server binary, not in this file.
+
+Guides for the searches people already type live at `/guides` and end on the matching tool. A finished job sends a `job_complete` event to Analytics when `GA4_ID` is set. Mark that event as a key event in the Analytics property if you want it in the conversions report.
 
 Search Console sitemap submit and AdSense approval stay in your Google accounts — the app only exposes `/sitemap.xml` and `/ads.txt`. Open `/?key=YOUR_KEY` once to store a Pro key in this browser.
