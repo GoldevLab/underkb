@@ -4,11 +4,13 @@ use crate::landing::canonical_url;
 use crate::site;
 
 pub fn page(_req: FlowRequest) -> View {
-    set_page_title("Chrome extension — compress images to KB | UnderKb");
+    crate::ads::begin_page();
+    set_page_title("KB extension for Chrome — compress images | UnderKb");
     set_page_description(
-        "UnderKb Chrome extension: open compress to KB, JPG to WebP, resize, remove a flat background, or a color palette from the toolbar.",
+        "UnderKb KB extension for Chrome. Open compress to 200 KB, JPG to WebP, resize or stretch, remove a flat background, or copy a HEX palette from the toolbar.",
     );
     set_page_canonical(canonical_url("/extension"));
+    set_page_json_ld(extension_json_ld());
     let store_block = match site::chrome_store_url() {
         Some(url) => view! {
             <p>
@@ -29,7 +31,7 @@ pub fn page(_req: FlowRequest) -> View {
     view! {
         <main class="content-section privacy-page">
             <p class="eyebrow">"Browser"</p>
-            <h1>"UnderKb extension"</h1>
+            <h1>"KB extension for Chrome"</h1>
             <p class="hero-lead">
                 "Toolbar shortcuts to every UnderKb job. Right-click an image to open Compress. The photo still drops on the website — ads stay there, which Google AdSense allows."
             </p>
@@ -68,9 +70,52 @@ pub fn page(_req: FlowRequest) -> View {
                     <p>"HEX palette from the photo."</p>
                 </li>
             </ul>
+            <h2>"FAQ"</h2>
+            <div class="faq-list">
+                <details>
+                    <summary>"What does the KB extension do?"</summary>
+                    <p>"It opens UnderKb from the Chrome toolbar: compress to a KB budget, JPG to WebP, resize or stretch, remove a flat background, or copy HEX colors. The image is processed on the website."</p>
+                </details>
+                <details>
+                    <summary>"Does the extension compress inside Chrome?"</summary>
+                    <p>"No. Each button opens the matching page on UnderKb. Ads stay on the site, which is what AdSense allows."</p>
+                </details>
+            </div>
             <p>
                 <NavLink href="/" class="btn btn-ghost">"Use the website"</NavLink>
             </p>
+            {crate::ads::slot("extension-end", "article")}
         </main>
     }
+}
+
+fn extension_json_ld() -> String {
+    serde_json::json!({
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "WebPage",
+                "name": "KB extension for Chrome — compress images | UnderKb",
+                "description": "UnderKb KB extension for Chrome. Open compress to 200 KB, JPG to WebP, resize or stretch, remove a flat background, or copy a HEX palette from the toolbar.",
+                "url": canonical_url("/extension"),
+                "inLanguage": "en"
+            },
+            {
+                "@type": "FAQPage",
+                "mainEntity": [
+                    {
+                        "@type": "Question",
+                        "name": "What does the KB extension do?",
+                        "acceptedAnswer": {"@type": "Answer", "text": "It opens UnderKb from the Chrome toolbar: compress to a KB budget, JPG to WebP, resize or stretch, remove a flat background, or copy HEX colors. The image is processed on the website."}
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "Does the extension compress inside Chrome?",
+                        "acceptedAnswer": {"@type": "Answer", "text": "No. Each button opens the matching page on UnderKb. Ads stay on the site, which is what AdSense allows."}
+                    }
+                ]
+            }
+        ]
+    })
+    .to_string()
 }

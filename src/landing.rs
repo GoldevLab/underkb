@@ -288,7 +288,7 @@ impl Tool {
     fn limits(self) -> &'static str {
         match self {
             Self::Compress => {
-                "Free uploads up to 20 MB, one file. A Pro key allows 50 MB and a ZIP of up to 20 images (sequential on this 512 MB machine). Animated GIFs keep the first frame. A huge PNG can still miss a tiny budget or time out. Results live in memory about 30 minutes."
+                "Free uploads up to 20 MB, one file. A Pro key allows 50 MB and a ZIP of up to 20 images, processed one after another. Animated GIFs keep the first frame. A huge PNG can still miss a tiny budget or time out. Results live in memory about 30 minutes."
             }
             Self::Convert => {
                 "Free 20 MB, Pro 50 MB. HEIC depends on the browser. Batch ZIP is only on Compress. Animated GIFs become a still."
@@ -314,6 +314,7 @@ impl Tool {
                 ("Is there an account?", "No. Ads may appear around the tool. The file itself is not paywalled."),
                 ("Can I compress a folder?", "Free is one file. A Pro key on /pricing lets you drop up to 20 images and download a ZIP."),
                 ("What if it still will not fit?", "We already dropped quality and scaled the long edge. A dense PNG may miss a tiny cap — try JPG or a larger budget."),
+                ("Can I compress to 2 KB?", "The smallest target is 8 KB. A photo aimed that low is scaled down hard. 200 KB is the default because forms usually ask for that."),
             ],
             Self::Convert => &[
                 ("Is WebP smaller than JPG?", "For photos, usually, at quality 70–85. Flat graphics sometimes prefer PNG or lossless WebP."),
@@ -361,6 +362,7 @@ pub fn canonical_url(path: &str) -> String {
 }
 
 pub fn page(tool: Tool) -> View {
+    crate::ads::begin_page();
     set_page_title(tool.title());
     set_page_description(tool.description());
     set_page_canonical(canonical_url(tool.path()));
@@ -457,7 +459,6 @@ pub fn page(tool: Tool) -> View {
                 <h2>"Limits"</h2>
                 <p>{tool.limits()}</p>
             </section>
-            {crate::ads::slot("landing-mid", "infeed")}
             <section class="faq" aria-labelledby="faq-title">
                 <h2 id="faq-title">"FAQ"</h2>
                 <div class="faq-list">{faq}</div>

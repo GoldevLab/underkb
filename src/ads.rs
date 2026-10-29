@@ -1,4 +1,8 @@
 //! Google AdSense. Layout is reserved; live units when ADSENSE_CLIENT + slot are set.
+//! One ad-unit id is emitted once per page. A repeated id becomes an empty node
+//! so the same unit is not stacked (AdSense fills one unit per page).
+
+use std::cell::RefCell;
 
 use resuma::prelude::*;
 use resuma::server::CspConfig;
@@ -103,27 +107,59 @@ pub fn ads_txt() -> Option<String> {
 }
 
 pub fn apply_csp(csp: &mut CspConfig) {
-    csp.strict_dynamic = false;
+    // Resuma 2.0 turns eval off and adds frame-src. Ads are injected without a
+    // nonce, so strict-dynamic must stay off. The Fly header is the enforcing
+    // policy; this one stays report-only so the two headers do not fight.
+    let mut policy = csp.clone().allow_google_adsense();
+    policy.strict_dynamic = false;
+    policy.unsafe_eval = true;
     for origin in ADSENSE_ORIGINS {
-        if !csp.script_src.iter().any(|s| s == origin) {
-            csp.script_src.push((*origin).into());
-        }
-        if !csp.img_src.iter().any(|s| s == origin) {
-            csp.img_src.push((*origin).into());
-        }
-        if !csp.connect_src.iter().any(|s| s == origin) {
-            csp.connect_src.push((*origin).into());
-        }
-        if !csp.style_src.iter().any(|s| s == origin) {
-            csp.style_src.push((*origin).into());
+        for list in [
+            &mut policy.script_src,
+            &mut policy.img_src,
+            &mut policy.connect_src,
+            &mut policy.style_src,
+            &mut policy.frame_src,
+        ] {
+            if !list.iter().any(|s| s == origin) {
+                list.push((*origin).into());
+            }
         }
     }
-    csp.report_only = true;
+    policy.report_only = true;
+    *csp = policy;
+}
+
+thread_local! {
+    static EMITTED_UNITS: RefCell<Vec<String>> = const { RefCell::new(Vec::new()) };
+}
+
+/// Call at the start of the page function, before any [`slot`].
+/// The page view is built before the layout, so clearing inside the layout
+/// would forget the unit the page already emitted.
+pub fn begin_page() {
+    EMITTED_UNITS.with(|c| c.borrow_mut().clear());
+}
+
+fn claim_unit(unit: &str) -> bool {
+    EMITTED_UNITS.with(|c| {
+        let mut seen = c.borrow_mut();
+        if seen.iter().any(|s| s == unit) {
+            return false;
+        }
+        seen.push(unit.to_string());
+        true
+    })
 }
 
 pub fn slot(placement: &'static str, size: &'static str) -> View {
     let class = format!("ad-slot ad-slot-{size}");
     let live = client_id().zip(slot_id(placement, size));
+    if let Some((_, unit)) = &live {
+        if !claim_unit(unit) {
+            return view! { <div hidden=""></div> };
+        }
+    }
     let lazy = matches!(size, "rectangle" | "article");
     match live {
         Some((client, unit)) if lazy => {
@@ -178,5 +214,15 @@ mod tests {
     fn accepts_ca_pub() {
         assert!(sanitize_client("ca-pub-1234567890123456").is_some());
         assert!(sanitize_client("pub-123").is_none());
+    }
+
+    #[test]
+    fn one_unit_id_per_page() {
+        begin_page();
+        assert!(claim_unit("4857783384"));
+        assert!(!claim_unit("4857783384"));
+        assert!(claim_unit("999"));
+        begin_page();
+        assert!(claim_unit("4857783384"));
     }
 }

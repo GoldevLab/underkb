@@ -134,9 +134,12 @@ fn seo_kit() -> SeoKit {
         ),
         (
             "API".into(),
-            "POST /api/compress file,target_kb,format. POST /api/compress-batch (Pro: ZIP of up to 20). /api/convert format,quality. /api/resize width,height,mode. /api/remove-bg tolerance. /api/colors count. Optional X-Api-Key (UNDERKB_PRO_KEYS) for 50 MB and batch.".into(),
+            "POST /api/compress file,target_kb,format. POST /api/compress-batch (Pro: ZIP of up to 20). /api/convert format,quality. /api/resize width,height,mode. /api/remove-bg tolerance. /api/colors count. Optional X-Api-Key for 50 MB and batch. Keys are issued by hand.".into(),
         ),
     ];
+    // Temporary downloads and JSON APIs are not pages. Pricing stays crawlable
+    // so its noindex can be seen; it is already out of the sitemap.
+    kit.ai.disallow = vec!["/api/".into(), "/d/".into()];
     kit
 }
 
@@ -175,7 +178,7 @@ async fn main() -> std::io::Result<()> {
                 .cookie("underkb_theme")
                 .storage_key("underkb-theme"),
         )
-        .with_stylesheet("/css/underkb.css?v=r4")
+        .with_stylesheet("/css/underkb.css?v=r5")
         .static_asset("/icon.svg", ICON, "image/svg+xml");
     {
         let contact = crate::site::contact_email()
@@ -205,7 +208,7 @@ async fn main() -> std::io::Result<()> {
             background_color: "#0c1410".into(),
             start_url: "/".into(),
             scope: "/".into(),
-            cache_version: "ukb-11".into(),
+            cache_version: "ukb-12".into(),
             display: "standalone".into(),
             orientation: "any".into(),
             lang: "en".into(),
@@ -214,7 +217,7 @@ async fn main() -> std::io::Result<()> {
             // never hits offline.
             precache_paths: vec![
                 "/themes.css".into(),
-                "/css/underkb.css?v=r4".into(),
+                "/css/underkb.css?v=r5".into(),
                 "/js/underkb.js?v=12".into(),
                 "/icon.svg".into(),
                 "/icons/icon-192.png".into(),

@@ -146,6 +146,10 @@ pub async fn stats() -> impl IntoResponse {
         header::CACHE_CONTROL,
         HeaderValue::from_static("no-store"),
     );
+    headers.insert(
+        header::HeaderName::from_static("x-robots-tag"),
+        HeaderValue::from_static("noindex"),
+    );
     (StatusCode::OK, headers, body)
 }
 
@@ -805,6 +809,10 @@ pub async fn download(Path(id): Path<String>, Query(q): Query<DownloadQuery>) ->
         header::CACHE_CONTROL,
         HeaderValue::from_static("private, max-age=300"),
     );
+    headers.insert(
+        header::HeaderName::from_static("x-robots-tag"),
+        HeaderValue::from_static("noindex"),
+    );
     let kind = if q.dl.as_deref() == Some("1") {
         "attachment"
     } else {
@@ -873,11 +881,15 @@ fn cors<T: IntoResponse>(status: StatusCode, body: T) -> Response {
     );
     headers.insert(
         header::ACCESS_CONTROL_ALLOW_HEADERS,
-        HeaderValue::from_static("content-type"),
+        HeaderValue::from_static("content-type, x-api-key, authorization, x-resuma-csrf"),
     );
     headers.insert(
         header::CACHE_CONTROL,
         HeaderValue::from_static("no-store"),
+    );
+    headers.insert(
+        header::HeaderName::from_static("x-robots-tag"),
+        HeaderValue::from_static("noindex"),
     );
     (status, headers, body).into_response()
 }

@@ -5,9 +5,10 @@ use crate::landing::{canonical_url, Tool};
 use crate::tool;
 
 pub fn page(_req: FlowRequest) -> View {
-    set_page_title("UnderKb — compress images to a KB budget, plus convert and resize");
+    crate::ads::begin_page();
+    set_page_title("Compress an image to 200 KB — free | UnderKb");
     set_page_description(
-        "Free image tools. The home dropzone hits a real kilobyte cap (default 200 KB). Convert, resize, flat-background cut, and HEX palette have their own pages. No account.",
+        "Free image compressor. The home dropzone hits a real kilobyte cap (default 200 KB, minimum 8 KB). Convert, resize or stretch, flat-background cut, HEX palette, and a Chrome KB extension. No account.",
     );
     set_page_canonical(canonical_url("/"));
     set_page_json_ld(home_json_ld());
@@ -48,7 +49,7 @@ pub fn page(_req: FlowRequest) -> View {
             <section class="tool-pick" aria-labelledby="jobs-title">
                 <h2 id="jobs-title">"Other jobs"</h2>
                 <p class="hint">
-                    "Each landing is a different task so search can find it. The compressor on this page is the default tool."
+                    "Convert to WebP, resize or stretch, cut a flat background, or copy a HEX palette. The compressor on this page is the default."
                 </p>
                 <div class="tool-grid">{cards}</div>
             </section>
@@ -71,9 +72,28 @@ pub fn page(_req: FlowRequest) -> View {
                         <summary>"Does remove background work on portraits?"</summary>
                         <p>"Only flat backdrops (studio, white). It is not an AI people matte. Open Remove background for that job."</p>
                     </details>
+                    <details>
+                        <summary>"Is there a KB extension?"</summary>
+                        <p>
+                            "Yes. The "
+                            <NavLink href="/extension">"Chrome extension"</NavLink>
+                            " opens compress, WebP, resize, a flat-background cut, and the palette. The file is still processed on this site."
+                        </p>
+                    </details>
+                    <details>
+                        <summary>"Can I stretch an image?"</summary>
+                        <p>
+                            "Open "
+                            <NavLink href="/redimensionar-imagen">"Resize"</NavLink>
+                            " and choose Stretch. Fit keeps the aspect ratio. Fill crops to the box."
+                        </p>
+                    </details>
+                    <details>
+                        <summary>"Can I compress to 2 KB?"</summary>
+                        <p>"The smallest target is 8 KB. A photo that small is scaled down hard. 200 KB is the default for forms and email."</p>
+                    </details>
                 </div>
             </section>
-            {crate::ads::slot("home-faq", "infeed")}
             {crate::landing::sister_apps()}
         </main>
     }
@@ -105,7 +125,7 @@ fn home_json_ld() -> String {
                 "applicationCategory": "UtilitiesApplication",
                 "operatingSystem": "Web",
                 "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
-                "description": "Free image compressor that hits a real KB target. JPG, WebP, PNG. No account."
+                "description": "Free image compressor with a real kilobyte cap. Default 200 KB, minimum 8 KB. JPG, WebP, PNG. No account."
             },
             {
                 "@type": "HowTo",
@@ -154,6 +174,21 @@ fn home_json_ld() -> String {
                         "@type": "Question",
                         "name": "Does remove background work on portraits?",
                         "acceptedAnswer": {"@type": "Answer", "text": "Only flat backdrops (studio, white). It is not an AI people matte. Open Remove background for that job."}
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "Is there a KB extension?",
+                        "acceptedAnswer": {"@type": "Answer", "text": "Yes. The Chrome extension opens compress, WebP, resize, a flat-background cut, and the palette. The file is still processed on this site."}
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "Can I stretch an image?",
+                        "acceptedAnswer": {"@type": "Answer", "text": "Open Resize and choose Stretch. Fit keeps the aspect ratio. Fill crops to the box."}
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "Can I compress to 2 KB?",
+                        "acceptedAnswer": {"@type": "Answer", "text": "The smallest target is 8 KB. A photo that small is scaled down hard. 200 KB is the default for forms and email."}
                     }
                 ]
             }

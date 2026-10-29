@@ -276,11 +276,19 @@ body::after {
   100% { box-shadow: 0 0 0 0 transparent; }
 }
 
-@media (max-width: 640px) {
-  .live-stats {
-    max-width: none;
-    justify-content: flex-start;
+@media (max-width: 720px) {
+  .header-inner {
+    flex-wrap: wrap;
   }
+  .live-stats {
+    flex: 1 1 100%;
+    max-width: none;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .live-stats::-webkit-scrollbar { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -829,6 +837,12 @@ select:focus-visible {
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+}
+
+.ad-slot.is-live .ad-slot-frame {
+  border: 0;
+  background: transparent;
+  color: transparent;
 }
 
 .ad-slot-leaderboard .ad-slot-frame { min-block-size: 90px; }
