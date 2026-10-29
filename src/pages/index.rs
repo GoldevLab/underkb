@@ -130,6 +130,13 @@ fn home_json_ld() -> String {
                 "applicationCategory": "UtilitiesApplication",
                 "operatingSystem": "Web",
                 "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+                "featureList": [
+                    "Compress an image to a kilobyte budget (default 200 KB)",
+                    "Convert JPG to WebP",
+                    "Resize, fit, crop, or stretch",
+                    "Remove a flat white background",
+                    "Extract a HEX color palette"
+                ],
                 "description": "Free image compressor with a real kilobyte cap. Default 200 KB, minimum 8 KB. JPG, WebP, PNG. No account."
             },
             {

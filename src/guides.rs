@@ -291,6 +291,7 @@ pub fn index_page() -> View {
         "How to compress an image to 200 KB, convert JPG to WebP, resize for a form, and remove a white background. Each guide includes the tool.",
     );
     set_page_canonical(canonical_url("/guides"));
+    set_page_json_ld(index_json_ld());
 
     view! {
         <main class="content-section guide-page">
@@ -325,6 +326,29 @@ pub fn home_strip() -> View {
         })
         .collect();
     view! { <ul class="related-grid">{cards}</ul> }
+}
+
+fn index_json_ld() -> String {
+    let origin = crate::landing::public_origin();
+    let items: Vec<_> = ALL
+        .iter()
+        .enumerate()
+        .map(|(i, g)| {
+            json!({
+                "@type": "ListItem",
+                "position": i + 1,
+                "name": g.h1,
+                "url": format!("{origin}{}", g.path)
+            })
+        })
+        .collect();
+    json!({
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "name": "UnderKb guides",
+        "itemListElement": items
+    })
+    .to_string()
 }
 
 fn tool_view(job: &Job) -> View {

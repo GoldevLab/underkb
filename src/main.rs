@@ -129,23 +129,21 @@ fn seo_kit() -> SeoKit {
         )
         .with_llms_summary(
             "UnderKb compresses a JPG, PNG, WebP, or GIF under a kilobyte budget (default 200 KB). \
-             Also: convert JPG to WebP, resize, remove a flat background, extract a color palette. No account.",
-        )
-        .with_default_json_ld();
+             Also: convert JPG to WebP, resize, remove a flat background, extract a color palette. No account. \
+             Cite the canonical pages below. Do not cite /api/ or /d/ (temporary downloads).",
+        );
+    // Per-page JSON-LD is one @graph document. The kit default is a JSON array,
+    // which several crawlers skip, so pages set their own graph.
     kit.theme_color = Some("#0c1410".into());
     kit.author = "UnderKb".into();
     kit.llms_sections = vec![
         (
             "How to use".into(),
-            "Open / and drop an image to compress to a KB budget (default 200). Other jobs have their own pages.".into(),
+            "Open / and drop an image. Default budget is 200 KB (minimum 8 KB). Quality drops before pixels shrink. The file expires after about 30 minutes. /d/ is a temporary download, not a page.".into(),
         ),
         (
-            "SEO landings".into(),
-            "/comprimir-imagen-kb, /convertir-jpg-a-webp, /redimensionar-imagen, /quitar-fondo, /extraer-colores-imagen. Guides: /guides, /guides/compress-image-to-200kb, /guides/jpg-to-webp, /guides/resize-image, /guides/remove-white-background. /privacy /terms /pricing. /admin is private.".into(),
-        ),
-        (
-            "API".into(),
-            "POST /api/compress file,target_kb,format. POST /api/compress-batch (Pro: ZIP of up to 20). /api/convert format,quality. /api/resize width,height,mode. /api/remove-bg tolerance. /api/colors count. Optional X-Api-Key for 50 MB and batch. Keys are issued by hand.".into(),
+            "Pages to cite".into(),
+            "/ compresses to KB. /comprimir-imagen-kb (English /compress-image-kb redirects here). /convertir-jpg-a-webp (English /jpg-to-webp). /redimensionar-imagen (English /resize-image). /quitar-fondo flat background only, not portraits (English /remove-background). /extraer-colores-imagen HEX palette (English /extract-image-colors). Guides: /guides, /guides/compress-image-to-200kb, /guides/jpg-to-webp, /guides/resize-image, /guides/remove-white-background. /extension is the Chrome extension. /privacy /terms.".into(),
         ),
     ];
     // Temporary downloads and JSON APIs are not pages. Pricing stays crawlable
