@@ -145,7 +145,20 @@ fn seo_kit() -> SeoKit {
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    crate::stats::init().await;
+    std::panic::set_hook(Box::new(|info| {
+        eprintln!("underkb panic: {info}");
+        let _ = std::io::Write::flush(&mut std::io::stderr());
+    }));
+    eprintln!("underkb boot");
+    let _ = std::io::Write::flush(&mut std::io::stderr());
+    // Turso setup must not block the listener. The libsql client panics (it
+    // does not return Err) when TLS is missing, and awaiting that on main
+    // exits 101 before the port opens.
+    tokio::spawn(async {
+        crate::stats::init().await;
+        eprintln!("underkb: stats init finished");
+        let _ = std::io::Write::flush(&mut std::io::stderr());
+    });
     // `with_seo_kit` owns keywords/author/theme-color meta, JSON-LD, and the
     // `/robots.txt` + `/llms.txt` routes (AI crawler policy included).
     let head = format!(

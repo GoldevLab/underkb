@@ -14,4 +14,4 @@ image = { version = "0.25", default-features = false, features = ["jpeg", "png",
 webp = "0.3"
 getrandom = "0.3"
 zip = { version = "2", default-features = false, features = ["deflate"] }
-libsql = { version = "0.9", default-features = false, features = ["remote"] }
+libsql = { version = "0.9", default-features = false, features = ["remote", "tls"] }
