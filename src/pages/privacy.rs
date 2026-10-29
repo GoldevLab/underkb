@@ -25,7 +25,7 @@ pub fn contact_line() -> View {
             <p>
                 "Questions: "
                 <a href="https://github.com/GoldevLab/underkb/issues" rel="noopener">"open an issue on GitHub"</a>
-                " (set CONTACT_EMAIL on the server to show a mailbox). "
+                ". "
                 <NavLink href="/terms">"Terms"</NavLink>
                 " · "
                 <NavLink href="/pricing">"Pro"</NavLink>
@@ -64,7 +64,7 @@ pub fn page(_req: FlowRequest) -> View {
 
             <h2>"Advertising"</h2>
             <p>
-                "Reserved ad slots may show Google AdSense when a publisher id is configured. Google and its partners may set cookies or use similar identifiers. See "
+                "Google AdSense may appear around the tools. This page, Terms, and Pro do not show ads, and we do not ask you to click them. Google and its partners may set cookies or use similar identifiers. See "
                 <a href="https://policies.google.com/technologies/ads" rel="noopener">"Google’s advertising policies"</a>
                 " and "
                 <a href="https://adssettings.google.com/" rel="noopener">"Ad Settings"</a>
@@ -79,7 +79,7 @@ pub fn page(_req: FlowRequest) -> View {
 
             <h2>"Analytics"</h2>
             <p>
-                "If GA4_ID or PLAUSIBLE_DOMAIN is set on the server, page views are measured so we can see which landings work. No account on this site either way."
+                "Page views may be measured so we can see which tools people open. There is still no account on this site."
             </p>
             <h2>"Contact"</h2>
             {contact_line()}

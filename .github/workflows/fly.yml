@@ -12,6 +12,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Create the data volume once
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          existing=$(flyctl volumes list -a underkb --json)
+          if ! echo "$existing" | jq -e 'map(select(.name=="underkb_data")) | length > 0' >/dev/null; then
+            flyctl volumes create underkb_data --region dfw --size 1 --yes -a underkb
+          fi
       - run: flyctl deploy --remote-only --ha=false
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

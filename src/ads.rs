@@ -66,6 +66,7 @@ pub fn head_snippet() -> String {
         Some(id) => format!(
             r#"<link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
 <link rel="dns-prefetch" href="https://googleads.g.doubleclick.net" />
+<meta name="google-adsense-account" content="{id}" />
 <meta name="ukb-adsense-client" content="{id}" />
 <script>
 (function(){{
@@ -74,7 +75,7 @@ pub fn head_snippet() -> String {
     window.__ukbAdsJs=1;
     var s=document.createElement('script');
     s.type='module';
-    s.src='/js/underkb-ads.js?v=3';
+    s.src='/js/underkb-ads.js?v=4';
     s.fetchPriority='low';
     document.head.appendChild(s);
   }}
@@ -123,7 +124,25 @@ pub fn apply_csp(csp: &mut CspConfig) {
 pub fn slot(placement: &'static str, size: &'static str) -> View {
     let class = format!("ad-slot ad-slot-{size}");
     let live = client_id().zip(slot_id(placement, size));
+    let lazy = matches!(size, "rectangle" | "article");
     match live {
+        Some((client, unit)) if lazy => {
+            let class = format!("{class} is-live");
+            view! {
+                <aside class={class} data-ad={placement} aria-label="Advertisement" data-ad-lazy="">
+                    <div class="ad-slot-frame">
+                        <ins
+                            class="adsbygoogle"
+                            style="display:block"
+                            data-ad-client={client}
+                            data-ad-slot={unit}
+                            data-ad-format="auto"
+                            data-full-width-responsive="true"
+                        ></ins>
+                    </div>
+                </aside>
+            }
+        }
         Some((client, unit)) => {
             let class = format!("{class} is-live");
             view! {

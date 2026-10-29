@@ -27,10 +27,10 @@ impl Tool {
 
     fn title(self) -> &'static str {
         match self {
-            Self::Compress => "Compress image to KB — JPG, PNG and WebP | UnderKb",
+            Self::Compress => "Compress image to 200 KB — JPG, PNG, and WebP | UnderKb",
             Self::Convert => "Convert JPG to WebP online, free | UnderKb",
-            Self::Resize => "Resize an image — width, height, and format | UnderKb",
-            Self::RemoveBg => "Remove a flat image background | UnderKb",
+            Self::Resize => "Resize an image — fit, crop, or stretch | UnderKb",
+            Self::RemoveBg => "Remove a flat background from an image | UnderKb",
             Self::Colors => "Extract colors from an image — HEX palette | UnderKb",
         }
     }
@@ -366,7 +366,6 @@ pub fn page(tool: Tool) -> View {
     set_page_canonical(canonical_url(tool.path()));
 
     let faq_ld = json!({
-        "@context": "https://schema.org",
         "@type": "FAQPage",
         "mainEntity": tool.faq().iter().map(|(q, a)| json!({
             "@type": "Question",
@@ -374,12 +373,23 @@ pub fn page(tool: Tool) -> View {
             "acceptedAnswer": { "@type": "Answer", "text": a }
         })).collect::<Vec<_>>()
     });
+    let howto_ld = json!({
+        "@type": "HowTo",
+        "name": tool.h1(),
+        "description": tool.lead(),
+        "step": tool.howto().iter().enumerate().map(|(i, (name, text))| json!({
+            "@type": "HowToStep",
+            "position": i + 1,
+            "name": name,
+            "text": text
+        })).collect::<Vec<_>>()
+    });
     let page_ld = json!({
-        "@context": "https://schema.org",
         "@type": "WebPage",
         "name": tool.title(),
         "description": tool.description(),
-        "url": canonical_url(tool.path())
+        "url": canonical_url(tool.path()),
+        "inLanguage": "en"
     });
 
     let howto: Vec<View> = pairs_to_items(tool.howto());
@@ -411,7 +421,13 @@ pub fn page(tool: Tool) -> View {
     // Replace the site-wide kit JSON-LD (WebApplication + homepage FAQ) with this
     // page's WebPage + FAQ, emitted in <head> with the CSP nonce — instead of a
     // raw <script> inside <main> next to a second FAQPage block.
-    set_page_json_ld(json!([page_ld, faq_ld]).to_string());
+    set_page_json_ld(
+        json!({
+            "@context": "https://schema.org",
+            "@graph": [page_ld, howto_ld, faq_ld]
+        })
+        .to_string(),
+    );
 
     view! {
         <main class="home-page" lang="en">
@@ -446,6 +462,7 @@ pub fn page(tool: Tool) -> View {
                 <h2 id="faq-title">"FAQ"</h2>
                 <div class="faq-list">{faq}</div>
             </section>
+            {crate::ads::slot("landing-end", "article")}
             <section class="features" aria-labelledby="more-title">
                 <h2 id="more-title">"Other tools"</h2>
                 <ul class="feature-grid">{more}</ul>
@@ -511,7 +528,7 @@ const FAMILY: &[(&str, &str, &str)] = &[
     (
         "PlacaQR",
         "3D-printable QR — stand, tile, keychain, or plaque.",
-        "https://placaqr.fly.dev",
+        "https://placaqr.com",
     )
 ];
 
@@ -543,7 +560,7 @@ pub fn sister_apps() -> View {
             <p class="eyebrow">"Also from us"</p>
             <h2>"Free tools, same idea"</h2>
             <p class="hint">
-                "No account. Paste, convert, download. Transcripts, PDFs, 3D QR, and invoices."
+                "No account. Paste, convert, download. Transcripts, PDFs, and 3D QR."
             </p>
             <ul class="tool-grid">{cards}</ul>
         </nav>

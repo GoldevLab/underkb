@@ -205,7 +205,8 @@ body::after {
   padding-top: max(0.7rem, env(safe-area-inset-top, 0px));
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
   position: relative;
 }
 
@@ -236,6 +237,85 @@ body::after {
   font-weight: 700;
   font-size: 1.2rem;
   letter-spacing: -0.03em;
+}
+
+.live-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.2rem 0.7rem;
+  margin: 0;
+  max-width: min(36rem, 68%);
+  font-size: 0.72rem;
+  line-height: 1.2;
+  color: var(--muted);
+}
+
+.live-stat strong {
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.live-stat strong[data-bump="1"] {
+  color: var(--accent);
+}
+
+.live-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: #3dd68c;
+  box-shadow: 0 0 0 0 color-mix(in srgb, #3dd68c 55%, transparent);
+  animation: live-pulse 1.8s ease-out infinite;
+}
+
+@keyframes live-pulse {
+  70% { box-shadow: 0 0 0 0.4rem transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+@media (max-width: 640px) {
+  .live-stats {
+    max-width: none;
+    justify-content: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-dot { animation: none; }
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem 1.1rem;
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 0 var(--page-pad-end) 0.65rem var(--page-pad);
+  overflow-x: auto;
+  scrollbar-width: none;
+  font-size: 0.84rem;
+}
+
+.site-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.site-nav-link {
+  flex: 0 0 auto;
+  color: var(--muted);
+  text-decoration: none;
+  white-space: nowrap;
+  padding-bottom: 0.15rem;
+  border-bottom: 2px solid transparent;
+}
+
+.site-nav-link:hover,
+.site-nav-link.is-active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
 }
 
 main {
@@ -755,6 +835,7 @@ select:focus-visible {
 .ad-slot-rectangle { max-width: 336px; margin-inline: auto; }
 .ad-slot-rectangle .ad-slot-frame { min-block-size: 250px; }
 .ad-slot-infeed .ad-slot-frame { min-block-size: 90px; }
+.ad-slot-article .ad-slot-frame { min-block-size: 250px; }
 
 .ad-rail {
   width: 100%;

@@ -9,6 +9,7 @@ pub fn page(_req: FlowRequest) -> View {
         "Free image tools with a 20 MB cap. Request a Pro key for 50 MB uploads and a ZIP of up to 20 compress jobs.",
     );
     set_page_canonical(canonical_url("/pricing"));
+    set_page_robots("noindex, follow");
     let contact = site::contact_email();
     let mail = contact
         .as_ref()
@@ -28,7 +29,7 @@ pub fn page(_req: FlowRequest) -> View {
             </p>
             <h2>"Free (no key)"</h2>
             <p>"One image at a time, up to 20 MB. Compress, convert, resize, flat cutout, palette. Ads may appear."</p>
-            <h2>"Pro (UNDERKB_PRO_KEYS)"</h2>
+            <h2>"Pro key"</h2>
             <p>
                 "Send X-Api-Key or Authorization: Bearer, or open the site with ?key= and we store it in this browser. Then: 50 MB per file, and on Compress a ZIP of up to 20 images (processed one after another)."
             </p>

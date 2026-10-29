@@ -30,8 +30,7 @@ function pendingIns(scope, includeLazy) {
     if (ins.getAttribute("data-adsbygoogle-status")) return false;
     const lazyHost = ins.closest("[data-ad-lazy]");
     if (lazyHost && !includeLazy) return false;
-    const dialog = ins.closest("dialog");
-    if (dialog && !dialog.open && !includeLazy) return false;
+    if (ins.closest("dialog")) return false;
     return true;
   });
 }
@@ -83,10 +82,7 @@ document.addEventListener(
   "toggle",
   (event) => {
     const t = event.target;
-    if (t instanceof HTMLDialogElement && t.open) {
-      ensureAdsenseScript().then(() => fillAds(t, true));
-      return;
-    }
+    if (t instanceof HTMLDialogElement) return;
     if (!(t instanceof HTMLElement) || t.popover == null) return;
     if (t.matches(":popover-open")) {
       ensureAdsenseScript().then(() => fillAds(t, true));

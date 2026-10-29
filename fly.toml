@@ -14,6 +14,12 @@ primary_region = "dfw"
   SITE_URL = "https://under200kb.com"
   CARGO_MANIFEST_DIR = "/app"
 
+# Local counter file. Turso is the source of truth when its secrets are set.
+[[mounts]]
+  source = "underkb_data"
+  destination = "/data"
+  initial_size = "1gb"
+
 [http_service]
   internal_port = 8080
   force_https = true

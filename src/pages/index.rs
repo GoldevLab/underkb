@@ -1,4 +1,5 @@
 use resuma::prelude::*;
+use serde_json::json;
 
 use crate::landing::{canonical_url, Tool};
 use crate::tool;
@@ -9,6 +10,7 @@ pub fn page(_req: FlowRequest) -> View {
         "Free image tools. The home dropzone hits a real kilobyte cap (default 200 KB). Convert, resize, flat-background cut, and HEX palette have their own pages. No account.",
     );
     set_page_canonical(canonical_url("/"));
+    set_page_json_ld(home_json_ld());
 
     let cards: Vec<View> = Tool::all().into_iter().map(tool_card).collect();
 
@@ -42,6 +44,7 @@ pub fn page(_req: FlowRequest) -> View {
                     </li>
                 </ol>
             </section>
+            {crate::ads::slot("home-howto", "article")}
             <section class="tool-pick" aria-labelledby="jobs-title">
                 <h2 id="jobs-title">"Other jobs"</h2>
                 <p class="hint">
@@ -74,6 +77,89 @@ pub fn page(_req: FlowRequest) -> View {
             {crate::landing::sister_apps()}
         </main>
     }
+}
+
+fn home_json_ld() -> String {
+    let origin = canonical_url("");
+    json!({
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "Organization",
+                "@id": format!("{origin}/#org"),
+                "name": "UnderKb",
+                "url": origin
+            },
+            {
+                "@type": "WebSite",
+                "@id": format!("{origin}/#website"),
+                "name": "UnderKb",
+                "url": origin,
+                "publisher": {"@id": format!("{origin}/#org")}
+            },
+            {
+                "@type": "WebApplication",
+                "name": "UnderKb",
+                "alternateName": ["compress image to 200kb", "image compressor"],
+                "url": origin,
+                "applicationCategory": "UtilitiesApplication",
+                "operatingSystem": "Web",
+                "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+                "description": "Free image compressor that hits a real KB target. JPG, WebP, PNG. No account."
+            },
+            {
+                "@type": "HowTo",
+                "name": "Compress an image to KB",
+                "description": "Set a kilobyte budget. We drop quality first, then scale pixels if needed.",
+                "step": [
+                    {
+                        "@type": "HowToStep",
+                        "position": 1,
+                        "name": "Drop the image",
+                        "text": "JPG, PNG, WebP, or GIF (first frame). Free 20 MB, one file. A Pro key on /pricing allows 50 MB or a ZIP of 20. On a phone you can pick from the camera roll and Share the result."
+                    },
+                    {
+                        "@type": "HowToStep",
+                        "position": 2,
+                        "name": "Set the budget",
+                        "text": "200 KB is the default — forms, email, and LMS caps. 50 KB for thumbnails. 500 KB for a lecture slide."
+                    },
+                    {
+                        "@type": "HowToStep",
+                        "position": 3,
+                        "name": "Download",
+                        "text": "The file stays available for about 30 minutes. We do not keep a gallery of your pictures."
+                    }
+                ]
+            },
+            {
+                "@type": "FAQPage",
+                "mainEntity": [
+                    {
+                        "@type": "Question",
+                        "name": "Can I compress a JPG to 200 KB?",
+                        "acceptedAnswer": {"@type": "Answer", "text": "Yes. 200 KB is the default target. You can set 50, 100, 500, or 1024 KB."}
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "Does UnderKb store my images?",
+                        "acceptedAnswer": {"@type": "Answer", "text": "The compressed file is kept in memory for about 30 minutes so you can download it, then it expires."}
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "Do I need an account?",
+                        "acceptedAnswer": {"@type": "Answer", "text": "No. Drop a file, download. Ads may appear around the tool."}
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "Does remove background work on portraits?",
+                        "acceptedAnswer": {"@type": "Answer", "text": "Only flat backdrops (studio, white). It is not an AI people matte. Open Remove background for that job."}
+                    }
+                ]
+            }
+        ]
+    })
+    .to_string()
 }
 
 fn tool_card(tool: Tool) -> View {

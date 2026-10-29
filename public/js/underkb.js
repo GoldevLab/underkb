@@ -335,7 +335,13 @@
         ));
         btn.append(chip, meta);
         btn.addEventListener("click", async () => {
-          try { await navigator.clipboard.writeText(c.hex); } catch (_) {}
+          try {
+            await navigator.clipboard.writeText(c.hex);
+            strong.textContent = "Copied";
+            setTimeout(() => { strong.textContent = c.hex; }, 1200);
+          } catch (_) {
+            setError("Could not copy. Select the code instead.");
+          }
         });
         swatches.appendChild(btn);
       });
@@ -401,7 +407,14 @@
       if (tool !== "colors") return;
       e.preventDefault();
       if (!lastHex.length) return;
-      try { await navigator.clipboard.writeText(lastHex.join("\n")); } catch (_) {}
+      const prev = download.textContent;
+      try {
+        await navigator.clipboard.writeText(lastHex.join("\n"));
+        download.textContent = "Copied";
+        setTimeout(() => { download.textContent = prev; }, 1200);
+      } catch (_) {
+        setError("Could not copy. Select the codes instead.");
+      }
     });
 
     const offerShare = async (url, filename, mime) => {
@@ -729,4 +742,56 @@
     tryHero();
   }
   document.addEventListener("resuma:navigate", () => requestAnimationFrame(tryHero));
+})();
+
+(() => {
+  const groupCount = (n) => {
+    const raw = String(Math.max(0, Number(n) || 0));
+    let out = "";
+    for (let i = 0; i < raw.length; i++) {
+      if (i > 0 && (raw.length - i) % 3 === 0) out += ",";
+      out += raw[i];
+    }
+    return out;
+  };
+  let statsTimer = 0;
+  const paintStats = (data) => {
+    const root = document.querySelector("[data-live-stats]");
+    if (!root || !data) return;
+    root.querySelectorAll("[data-stat]").forEach((el) => {
+      const key = el.getAttribute("data-stat");
+      if (!key || typeof data[key] !== "number") return;
+      const text = groupCount(data[key]);
+      if (el.textContent === text) return;
+      el.textContent = text;
+      el.dataset.bump = "1";
+      setTimeout(() => {
+        if (el.dataset.bump === "1") el.dataset.bump = "0";
+      }, 700);
+    });
+  };
+  const pullStats = async () => {
+    if (!document.querySelector("[data-live-stats]")) return;
+    try {
+      const res = await fetch("/api/stats", {
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+        credentials: "same-origin",
+      });
+      if (!res.ok) return;
+      paintStats(await res.json());
+    } catch (_) {}
+  };
+  const armStats = () => {
+    pullStats();
+    if (statsTimer) return;
+    statsTimer = window.setInterval(() => {
+      if (!document.hidden) pullStats();
+    }, 2500);
+  };
+  armStats();
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) pullStats();
+  });
+  document.addEventListener("resuma:navigate", () => pullStats());
 })();

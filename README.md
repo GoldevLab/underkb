@@ -32,7 +32,7 @@ Live: [under200kb.com](https://under200kb.com) (also [underkb.fly.dev](https://u
 
 ## Google AdSense
 
-Same pattern as YouTubeForge. Keep units to `home-faq` and `landing-mid`. No ads on 404. Do not commit publisher IDs.
+Same pattern as YouTubeForge. Units: `home-howto`, `home-faq`, `landing-mid`, `landing-end`, and the footer leaderboard. No ads on privacy, terms, pricing, or 404. Nothing fills inside a dialog. Do not commit publisher IDs.
 
 ```bash
 export ADSENSE_CLIENT=ca-pub-xxxxxxxxxxxxxxxx
@@ -54,5 +54,7 @@ After deploy, `/ads.txt` is served when `ADSENSE_CLIENT` is set. CSP stays repor
 | `CHROME_STORE_URL` | Store button on `/extension` |
 | `GSC_VERIFICATION` | Search Console meta |
 | `GA4_ID` (`G-…`) or `PLAUSIBLE_DOMAIN` | Analytics |
+| `TURSO_DATABASE_URL` | libSQL URL. Tool counters increment here from the server. |
+| `TURSO_AUTH_TOKEN` | Turso read-write token. Server only. Never put it in git or in the page. |
 
 Search Console sitemap submit and AdSense approval stay in your Google accounts — the app only exposes `/sitemap.xml` and `/ads.txt`. Open `/?key=YOUR_KEY` once to store a Pro key in this browser.

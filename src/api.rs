@@ -135,6 +135,20 @@ fn fail(status: StatusCode, error: String) -> Response {
     cors(status, Json(ErrBody { ok: false, error }))
 }
 
+pub async fn stats() -> impl IntoResponse {
+    let body = serde_json::to_string(&crate::stats::snapshot()).unwrap_or_else(|_| "{}".into());
+    let mut headers = HeaderMap::new();
+    headers.insert(
+        header::CONTENT_TYPE,
+        HeaderValue::from_static("application/json; charset=utf-8"),
+    );
+    headers.insert(
+        header::CACHE_CONTROL,
+        HeaderValue::from_static("no-store"),
+    );
+    (StatusCode::OK, headers, body)
+}
+
 pub async fn preflight() -> Response {
     cors(StatusCode::NO_CONTENT, ())
 }
@@ -191,6 +205,7 @@ pub async fn compress_upload(
         result.height,
         (target / 1024) as u32,
         result.over_budget,
+        crate::stats::Kind::Compress,
     )
 }
 
@@ -269,6 +284,7 @@ pub async fn compress_batch(
             result.height,
             (target / 1024) as u32,
             result.over_budget,
+            crate::stats::Kind::Compress,
         );
     }
 
@@ -293,6 +309,7 @@ pub async fn compress_batch(
             );
         }
     };
+    crate::stats::record_n(crate::stats::Kind::Compress, n as u64);
     cors(
         StatusCode::OK,
         Json(OkBody {
@@ -426,7 +443,7 @@ pub async fn convert_upload(
         Ok(r) => r,
         Err(r) => return r,
     };
-    image_ok(result, &filename, orig)
+    image_ok(result, &filename, orig, crate::stats::Kind::Convert)
 }
 
 pub async fn resize_upload(
@@ -461,7 +478,7 @@ pub async fn resize_upload(
         Ok(r) => r,
         Err(r) => return r,
     };
-    image_ok(result, &filename, orig)
+    image_ok(result, &filename, orig, crate::stats::Kind::Resize)
 }
 
 pub async fn remove_bg_upload(
@@ -491,7 +508,7 @@ pub async fn remove_bg_upload(
         Ok(r) => r,
         Err(r) => return r,
     };
-    image_ok(result, &filename, orig)
+    image_ok(result, &filename, orig, crate::stats::Kind::Background)
 }
 
 pub async fn colors_upload(
@@ -519,6 +536,7 @@ pub async fn colors_upload(
         Ok(r) => r,
         Err(r) => return r,
     };
+    crate::stats::record(crate::stats::Kind::Colors);
     cors(
         StatusCode::OK,
         Json(ColorsBody {
@@ -544,7 +562,12 @@ fn orig_meta(parts: &Parts) -> OrigMeta {
     }
 }
 
-fn image_ok(result: ImageOut, filename: &str, orig: OrigMeta) -> Response {
+fn image_ok(
+    result: ImageOut,
+    filename: &str,
+    orig: OrigMeta,
+    kind: crate::stats::Kind,
+) -> Response {
     let out_name = format!("{}.{}", stem_filename(filename), result.format.ext());
     staged_ok(
         result.bytes,
@@ -560,6 +583,7 @@ fn image_ok(result: ImageOut, filename: &str, orig: OrigMeta) -> Response {
         result.height,
         0,
         false,
+        kind,
     )
 }
 
@@ -717,6 +741,7 @@ fn staged_ok(
     height: u32,
     target_kb: u32,
     over_budget: bool,
+    kind: crate::stats::Kind,
 ) -> Response {
     let result_bytes = bytes.len();
     let original_bytes = orig_bytes
@@ -739,6 +764,7 @@ fn staged_ok(
             );
         }
     };
+    crate::stats::record(kind);
     cors(
         StatusCode::OK,
         Json(OkBody {

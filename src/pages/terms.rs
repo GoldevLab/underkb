@@ -25,13 +25,13 @@ pub fn page(_req: FlowRequest) -> View {
             </p>
             <h2>"Limits and Pro keys"</h2>
             <p>
-                "Free is one file up to 20 MB. A key in UNDERKB_PRO_KEYS (header X-Api-Key, Authorization: Bearer, or cookie ukb_pro) raises that to 50 MB and a ZIP of up to 20 compress jobs. Keys are issued by hand — see "
+                "Free is one file up to 20 MB. A Pro key (sent as X-Api-Key or stored in this browser) raises that to 50 MB and a ZIP of up to 20 compress jobs. Keys are issued by hand — see "
                 <NavLink href="/pricing">"/pricing"</NavLink>
                 ". A key is not a license to ignore copyright."
             </p>
             <h2>"Ads and availability"</h2>
             <p>
-                "The tools are free. Ads may appear. We do not promise every PNG will hit a tiny kilobyte cap, or that the machine is always idle."
+                "The tools are free. Ads may appear on the tool pages, not on Privacy, Terms, or Pro. We do not ask you to click them. We do not promise every PNG will hit a tiny kilobyte cap, or that the machine is always idle."
             </p>
             <p>
                 <NavLink href="/privacy">"Privacy"</NavLink>

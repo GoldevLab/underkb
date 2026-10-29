@@ -8,6 +8,7 @@ mod ops;
 mod site;
 mod pages;
 mod stage;
+mod stats;
 mod tool;
 
 use axum::response::Redirect;
@@ -15,9 +16,23 @@ use axum::routing::{get, post};
 use pages::PagesRegistry;
 use resuma::prelude::*;
 use resuma::SeoKit;
-use serde_json::json;
+
+fn page_shows_ads() -> bool {
+    let path = current_request()
+        .map(|r| r.path)
+        .unwrap_or_else(|| "/".into());
+    let trimmed = path.trim_end_matches('/');
+    let path = if trimmed.is_empty() { "/" } else { trimmed };
+    !matches!(path, "/privacy" | "/terms" | "/pricing")
+}
 
 fn chrome(body: View, ads: bool) -> View {
+    let activity = crate::stats::snapshot();
+    let n_compress = crate::stats::grouped(activity.compress);
+    let n_convert = crate::stats::grouped(activity.convert);
+    let n_resize = crate::stats::grouped(activity.resize);
+    let n_background = crate::stats::grouped(activity.background);
+    let n_colors = crate::stats::grouped(activity.colors);
     let footer_ad = if ads {
         view! {
             <div class="ad-rail ad-rail-end">
@@ -40,8 +55,23 @@ fn chrome(body: View, ads: bool) -> View {
                         <span class="brand-mark" aria-hidden="true">"kB"</span>
                         <span class="brand-name">"UnderKb"</span>
                     </NavLink>
+                    <div class="live-stats" data-live-stats="" aria-live="polite" aria-label="Completed jobs">
+                        <span class="live-dot" aria-hidden="true"></span>
+                        <span class="live-stat">"Compress "<strong data-stat="compress">{n_compress}</strong></span>
+                        <span class="live-stat">"Convert "<strong data-stat="convert">{n_convert}</strong></span>
+                        <span class="live-stat">"Resize "<strong data-stat="resize">{n_resize}</strong></span>
+                        <span class="live-stat">"Background "<strong data-stat="background">{n_background}</strong></span>
+                        <span class="live-stat">"Colors "<strong data-stat="colors">{n_colors}</strong></span>
+                    </div>
                     <span class="nav-progress" aria-hidden="true"></span>
                 </div>
+                <nav class="site-nav" aria-label="Tools">
+                    <NavLink href="/comprimir-imagen-kb" class="site-nav-link" activeClass="is-active">"Compress to KB"</NavLink>
+                    <NavLink href="/convertir-jpg-a-webp" class="site-nav-link" activeClass="is-active">"JPG to WebP"</NavLink>
+                    <NavLink href="/redimensionar-imagen" class="site-nav-link" activeClass="is-active">"Resize"</NavLink>
+                    <NavLink href="/quitar-fondo" class="site-nav-link" activeClass="is-active">"Remove background"</NavLink>
+                    <NavLink href="/extraer-colores-imagen" class="site-nav-link" activeClass="is-active">"Colors"</NavLink>
+                </nav>
             </header>
             {body}
             {footer_ad}
@@ -59,7 +89,7 @@ fn chrome(body: View, ads: bool) -> View {
 
 #[layout("/")]
 fn RootLayout() -> View {
-    chrome(view! { <Slot /> }, true)
+    chrome(view! { <Slot /> }, page_shows_ads())
 }
 
 fn not_found() -> View {
@@ -90,56 +120,7 @@ fn seo_kit() -> SeoKit {
             "UnderKb compresses a JPG, PNG, WebP, or GIF under a kilobyte budget (default 200 KB). \
              Also: convert JPG to WebP, resize, remove a flat background, extract a color palette. No account.",
         )
-        .with_default_json_ld()
-        .push_json_ld(json!({
-            "@context": "https://schema.org",
-            "@type": "WebApplication",
-            "name": "UnderKb",
-            "alternateName": ["compress image to 200kb", "image compressor"],
-            "url": crate::landing::public_origin(),
-            "applicationCategory": "UtilitiesApplication",
-            "operatingSystem": "Web",
-            "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
-            "description": "Free image compressor that hits a real KB target. JPG, WebP, PNG. No account."
-        }))
-        .push_json_ld(json!({
-            "@context": "https://schema.org",
-            "@type": "FAQPage",
-            "mainEntity": [
-                {
-                    "@type": "Question",
-                    "name": "Can I compress a JPG to 200 KB?",
-                    "acceptedAnswer": {
-                        "@type": "Answer",
-                        "text": "Yes. 200 KB is the default target. You can set 50, 100, 500, or 1024 KB."
-                    }
-                },
-                {
-                    "@type": "Question",
-                    "name": "Does UnderKb store my images?",
-                    "acceptedAnswer": {
-                        "@type": "Answer",
-                        "text": "The compressed file is kept in memory for about 30 minutes so you can download it, then it expires."
-                    }
-                },
-                {
-                    "@type": "Question",
-                    "name": "Do I need an account?",
-                    "acceptedAnswer": {
-                        "@type": "Answer",
-                        "text": "No. Drop a file, download. Ads may appear around the tool."
-                    }
-                },
-                {
-                    "@type": "Question",
-                    "name": "Does remove background work on portraits?",
-                    "acceptedAnswer": {
-                        "@type": "Answer",
-                        "text": "Only flat backdrops (studio, white). It is not an AI people matte."
-                    }
-                }
-            ]
-        }));
+        .with_default_json_ld();
     kit.theme_color = Some("#0c1410".into());
     kit.author = "UnderKb".into();
     kit.llms_sections = vec![
@@ -161,10 +142,11 @@ fn seo_kit() -> SeoKit {
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
+    crate::stats::init().await;
     // `with_seo_kit` owns keywords/author/theme-color meta, JSON-LD, and the
     // `/robots.txt` + `/llms.txt` routes (AI crawler policy included).
     let head = format!(
-        "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\" /><link rel=\"icon\" href=\"/icon.svg\" type=\"image/svg+xml\" /><link rel=\"icon\" href=\"/icons/favicon-32.png\" type=\"image/png\" sizes=\"32x32\" /><link rel=\"apple-touch-icon\" href=\"/icons/apple-touch-icon.png\" sizes=\"180x180\" /><script type=\"module\" src=\"/js/underkb.js?v=10\"></script>{}{}",
+        "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\" /><link rel=\"icon\" href=\"/icon.svg\" type=\"image/svg+xml\" /><link rel=\"icon\" href=\"/icons/favicon-32.png\" type=\"image/png\" sizes=\"32x32\" /><link rel=\"apple-touch-icon\" href=\"/icons/apple-touch-icon.png\" sizes=\"180x180\" /><script type=\"module\" src=\"/js/underkb.js?v=12\"></script>{}{}",
         ads::head_snippet(),
         crate::site::head_extras()
     );
@@ -186,13 +168,14 @@ async fn main() -> std::io::Result<()> {
         .with_og_image("/cover.png")
         .with_head(head)
         .with_seo_kit(seo_kit())
+        .with_sitemap_exclude(["/pricing"])
         .with_html_theme(
             HtmlTheme::new(["forest"])
                 .dark(["forest"])
                 .cookie("underkb_theme")
                 .storage_key("underkb-theme"),
         )
-        .with_stylesheet("/css/underkb.css?v=r2")
+        .with_stylesheet("/css/underkb.css?v=r4")
         .static_asset("/icon.svg", ICON, "image/svg+xml");
     {
         let contact = crate::site::contact_email()
@@ -222,7 +205,7 @@ async fn main() -> std::io::Result<()> {
             background_color: "#0c1410".into(),
             start_url: "/".into(),
             scope: "/".into(),
-            cache_version: "ukb-8".into(),
+            cache_version: "ukb-11".into(),
             display: "standalone".into(),
             orientation: "any".into(),
             lang: "en".into(),
@@ -231,8 +214,8 @@ async fn main() -> std::io::Result<()> {
             // never hits offline.
             precache_paths: vec![
                 "/themes.css".into(),
-                "/css/underkb.css?v=r2".into(),
-                "/js/underkb.js?v=10".into(),
+                "/css/underkb.css?v=r4".into(),
+                "/js/underkb.js?v=12".into(),
                 "/icon.svg".into(),
                 "/icons/icon-192.png".into(),
                 "/icons/icon-512.png".into(),
@@ -260,6 +243,7 @@ async fn main() -> std::io::Result<()> {
         .route(landing::Tool::Resize.en_alias(), get(|| redirect_tool_alias(landing::Tool::Resize.path())))
         .route(landing::Tool::RemoveBg.en_alias(), get(|| redirect_tool_alias(landing::Tool::RemoveBg.path())))
         .route(landing::Tool::Colors.en_alias(), get(|| redirect_tool_alias(landing::Tool::Colors.path())))
+        .route("/api/stats", get(api::stats).options(api::preflight))
         .route("/api/compress", post(api::compress_upload).options(api::preflight))
         .route("/api/compress-batch", post(api::compress_batch).options(api::preflight))
         .route("/api/convert", post(api::convert_upload).options(api::preflight))
