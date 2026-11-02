@@ -4,7 +4,7 @@
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
-use std::sync::Mutex;
+use std::sync::{LazyLock, Mutex};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use hmac::{Hmac, KeyInit, Mac};
@@ -25,7 +25,8 @@ struct Hits {
     count: usize,
 }
 
-static LOGIN_HITS: Mutex<HashMap<String, Hits>> = Mutex::new(HashMap::new());
+static LOGIN_HITS: LazyLock<Mutex<HashMap<String, Hits>>> =
+    LazyLock::new(|| Mutex::new(HashMap::new()));
 static SECRET: std::sync::LazyLock<[u8; 32]> = std::sync::LazyLock::new(load_or_create_secret);
 
 pub fn allow_login(ip: &str) -> bool {
