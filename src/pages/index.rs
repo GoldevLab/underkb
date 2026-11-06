@@ -89,7 +89,7 @@ pub fn page(_req: FlowRequest) -> View {
                         <summary>"Can I stretch an image?"</summary>
                         <p>
                             "Open "
-                            <NavLink href="/redimensionar-imagen">"Resize"</NavLink>
+                            <NavLink href="/resize-image">"Resize"</NavLink>
                             " and choose Stretch. Fit keeps the aspect ratio. Fill crops to the box."
                         </p>
                     </details>

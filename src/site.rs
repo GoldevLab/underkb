@@ -16,10 +16,11 @@ pub fn chrome_store_url() -> Option<String> {
         .filter(|s| s.starts_with("https://"))
 }
 
-/// Send `underkb.fly.dev` HTML traffic to the canonical domain.
+/// Send alternate hosts to the canonical domain.
 #[middleware]
-async fn redirect_legacy_fly_host(req: FlowRequest) -> Result<FlowRequest> {
+async fn redirect_noncanonical_host(req: FlowRequest) -> Result<FlowRequest> {
     const LEGACY: &str = "underkb.fly.dev";
+    const WWW: &str = "www.under200kb.com";
     let host = req
         .header("x-forwarded-host")
         .or_else(|| req.header("host"))
@@ -32,7 +33,7 @@ async fn redirect_legacy_fly_host(req: FlowRequest) -> Result<FlowRequest> {
         .next()
         .unwrap_or("")
         .to_ascii_lowercase();
-    if host != LEGACY {
+    if host != LEGACY && host != WWW {
         return Ok(req);
     }
     let origin = crate::landing::public_origin()

@@ -12,5 +12,5 @@ chrome.runtime.onInstalled.addListener(() => {
 
 chrome.contextMenus.onClicked.addListener((info) => {
   if (info.menuItemId !== "underkb-compress") return;
-  chrome.tabs.create({ url: `${SITE}/comprimir-imagen-kb` });
+  chrome.tabs.create({ url: `${SITE}/compress-image-kb` });
 });

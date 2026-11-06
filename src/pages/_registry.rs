@@ -7,11 +7,11 @@ impl FlowPageRegistry for PagesRegistry {
     fn routes(&self) -> &'static [(&'static str, &'static str)] {
         &[
             ("/", "index"),
-            ("/comprimir-imagen-kb", "comprimir_imagen_kb"),
-            ("/convertir-jpg-a-webp", "convertir_jpg_a_webp"),
-            ("/redimensionar-imagen", "redimensionar_imagen"),
-            ("/quitar-fondo", "quitar_fondo"),
-            ("/extraer-colores-imagen", "extraer_colores_imagen"),
+            ("/compress-image-kb", "comprimir_imagen_kb"),
+            ("/jpg-to-webp", "convertir_jpg_a_webp"),
+            ("/resize-image", "redimensionar_imagen"),
+            ("/remove-background", "quitar_fondo"),
+            ("/extract-image-colors", "extraer_colores_imagen"),
             ("/privacy", "privacy"),
             ("/terms", "terms"),
             ("/pricing", "pricing"),

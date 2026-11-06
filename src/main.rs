@@ -74,11 +74,11 @@ fn chrome(body: View, ads: bool) -> View {
                     </NavLink>
                 </div>
                 <nav class="site-nav" aria-label="Tools">
-                    <NavLink href="/comprimir-imagen-kb" class="site-nav-link" activeClass="is-active">"Compress to KB"</NavLink>
-                    <NavLink href="/convertir-jpg-a-webp" class="site-nav-link" activeClass="is-active">"JPG to WebP"</NavLink>
-                    <NavLink href="/redimensionar-imagen" class="site-nav-link" activeClass="is-active">"Resize"</NavLink>
-                    <NavLink href="/quitar-fondo" class="site-nav-link" activeClass="is-active">"Remove background"</NavLink>
-                    <NavLink href="/extraer-colores-imagen" class="site-nav-link" activeClass="is-active">"Colors"</NavLink>
+                    <NavLink href="/compress-image-kb" class="site-nav-link" activeClass="is-active">"Compress to KB"</NavLink>
+                    <NavLink href="/jpg-to-webp" class="site-nav-link" activeClass="is-active">"JPG to WebP"</NavLink>
+                    <NavLink href="/resize-image" class="site-nav-link" activeClass="is-active">"Resize"</NavLink>
+                    <NavLink href="/remove-background" class="site-nav-link" activeClass="is-active">"Remove background"</NavLink>
+                    <NavLink href="/extract-image-colors" class="site-nav-link" activeClass="is-active">"Colors"</NavLink>
                     <NavLink href="/guides" class="site-nav-link" activeClass="is-active">"Guides"</NavLink>
                 </nav>
                 <span class="nav-progress" aria-hidden="true"></span>
@@ -124,8 +124,8 @@ fn seo_kit() -> SeoKit {
     let mut kit = SeoKit::new("UnderKb", &origin)
         .with_locale("en_US")
         .with_keywords(
-            "compress image to 200kb, comprimir imagen kb, convertir jpg a webp, redimensionar imagen, \
-             quitar fondo, extraer colores imagen, image compressor, compress jpg to 200kb",
+            "compress image to 200kb, convert jpg to webp, resize image, remove image background, \
+             extract image colors, image compressor, compress jpg to 200kb",
         )
         .with_llms_summary(
             "UnderKb compresses a JPG, PNG, WebP, or GIF under a kilobyte budget (default 200 KB). \
@@ -143,7 +143,7 @@ fn seo_kit() -> SeoKit {
         ),
         (
             "Pages to cite".into(),
-            "/ compresses to KB. /comprimir-imagen-kb (English /compress-image-kb redirects here). /convertir-jpg-a-webp (English /jpg-to-webp). /redimensionar-imagen (English /resize-image). /quitar-fondo flat background only, not portraits (English /remove-background). /extraer-colores-imagen HEX palette (English /extract-image-colors). Guides: /guides, /guides/compress-image-to-200kb, /guides/jpg-to-webp, /guides/resize-image, /guides/remove-white-background. /extension is the Chrome extension. /privacy /terms.".into(),
+            "/ compresses to KB. /compress-image-kb compresses an image to a size limit. /jpg-to-webp converts image formats. /resize-image changes dimensions. /remove-background only removes a flat backdrop, not portraits. /extract-image-colors returns a HEX palette. Guides: /guides, /guides/compress-image-to-200kb, /guides/jpg-to-webp, /guides/resize-image, /guides/remove-white-background. /extension is the Chrome extension. /privacy /terms.".into(),
         ),
     ];
     // Temporary downloads and JSON APIs are not pages. Pricing stays crawlable
@@ -255,7 +255,7 @@ async fn main() -> std::io::Result<()> {
                 PwaShortcut {
                     name: "Compress to KB".into(),
                     short_name: "Compress".into(),
-                    url: "/comprimir-imagen-kb".into(),
+                    url: "/compress-image-kb".into(),
                 },
             ],
             offline_title: "You're offline".into(),
@@ -263,11 +263,11 @@ async fn main() -> std::io::Result<()> {
                 "UnderKb needs a connection to process images. Reconnect and try again.".into(),
             manifest_icons: Vec::new(),
         })
-        .route(landing::Tool::Compress.en_alias(), get(|| redirect_tool_alias(landing::Tool::Compress.path())))
-        .route(landing::Tool::Convert.en_alias(), get(|| redirect_tool_alias(landing::Tool::Convert.path())))
-        .route(landing::Tool::Resize.en_alias(), get(|| redirect_tool_alias(landing::Tool::Resize.path())))
-        .route(landing::Tool::RemoveBg.en_alias(), get(|| redirect_tool_alias(landing::Tool::RemoveBg.path())))
-        .route(landing::Tool::Colors.en_alias(), get(|| redirect_tool_alias(landing::Tool::Colors.path())))
+        .route(landing::Tool::Compress.legacy_path(), get(|| redirect_tool_alias(landing::Tool::Compress.path())))
+        .route(landing::Tool::Convert.legacy_path(), get(|| redirect_tool_alias(landing::Tool::Convert.path())))
+        .route(landing::Tool::Resize.legacy_path(), get(|| redirect_tool_alias(landing::Tool::Resize.path())))
+        .route(landing::Tool::RemoveBg.legacy_path(), get(|| redirect_tool_alias(landing::Tool::RemoveBg.path())))
+        .route(landing::Tool::Colors.legacy_path(), get(|| redirect_tool_alias(landing::Tool::Colors.path())))
         .route("/api/stats", get(api::stats).options(api::preflight))
         .route("/api/compress", post(api::compress_upload).options(api::preflight))
         .route("/api/compress-batch", post(api::compress_batch).options(api::preflight))

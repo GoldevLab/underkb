@@ -66,7 +66,7 @@ const COMPRESS: Guide = Guide {
         ),
     ],
     links: &[
-        ("/comprimir-imagen-kb", "Open the compressor"),
+        ("/compress-image-kb", "Open the compressor"),
         ("/guides/jpg-to-webp", "Convert the result to WebP"),
         ("/guides/resize-image", "Resize before you compress"),
     ],
@@ -112,7 +112,7 @@ const WEBP: Guide = Guide {
         ),
     ],
     links: &[
-        ("/convertir-jpg-a-webp", "Open JPG to WebP"),
+        ("/jpg-to-webp", "Open JPG to WebP"),
         ("/guides/compress-image-to-200kb", "Then compress to 200 KB"),
         ("/guides/remove-white-background", "Cut a flat background first"),
     ],
@@ -158,7 +158,7 @@ const RESIZE: Guide = Guide {
         ),
     ],
     links: &[
-        ("/redimensionar-imagen", "Open resize"),
+        ("/resize-image", "Open resize"),
         ("/guides/compress-image-to-200kb", "Compress after you resize"),
         ("/guides/jpg-to-webp", "Export as WebP"),
     ],
@@ -204,7 +204,7 @@ const BACKGROUND: Guide = Guide {
         ),
     ],
     links: &[
-        ("/quitar-fondo", "Open remove background"),
+        ("/remove-background", "Open remove background"),
         ("/guides/jpg-to-webp", "Export the cut as WebP"),
         ("/guides/compress-image-to-200kb", "Compress if the PNG is heavy"),
     ],

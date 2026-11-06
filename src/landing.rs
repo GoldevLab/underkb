@@ -1,4 +1,4 @@
-//! Tool landings (English UI; Spanish URL slugs for search).
+//! English tool landing pages and canonical URLs.
 
 use resuma::prelude::*;
 use serde_json::json;
@@ -17,11 +17,11 @@ pub enum Tool {
 impl Tool {
     pub fn path(self) -> &'static str {
         match self {
-            Self::Compress => "/comprimir-imagen-kb",
-            Self::Convert => "/convertir-jpg-a-webp",
-            Self::Resize => "/redimensionar-imagen",
-            Self::RemoveBg => "/quitar-fondo",
-            Self::Colors => "/extraer-colores-imagen",
+            Self::Compress => "/compress-image-kb",
+            Self::Convert => "/jpg-to-webp",
+            Self::Resize => "/resize-image",
+            Self::RemoveBg => "/remove-background",
+            Self::Colors => "/extract-image-colors",
         }
     }
 
@@ -189,14 +189,14 @@ impl Tool {
         ]
     }
 
-    /// English aliases → Spanish canonicals (not in the sitemap).
-    pub fn en_alias(self) -> &'static str {
+    /// Previous Spanish URLs retained as permanent redirects.
+    pub fn legacy_path(self) -> &'static str {
         match self {
-            Self::Compress => "/compress-image-kb",
-            Self::Convert => "/jpg-to-webp",
-            Self::Resize => "/resize-image",
-            Self::RemoveBg => "/remove-background",
-            Self::Colors => "/extract-image-colors",
+            Self::Compress => "/comprimir-imagen-kb",
+            Self::Convert => "/convertir-jpg-a-webp",
+            Self::Resize => "/redimensionar-imagen",
+            Self::RemoveBg => "/quitar-fondo",
+            Self::Colors => "/extraer-colores-imagen",
         }
     }
 
@@ -488,15 +488,15 @@ fn pairs_to_items(rows: &[(&'static str, &'static str)]) -> Vec<View> {
 pub fn seo_footer_links() -> View {
     view! {
         <nav class="seo-links" aria-label="UnderKb tools">
-            <NavLink href="/comprimir-imagen-kb">"Compress"</NavLink>
+            <NavLink href="/compress-image-kb">"Compress"</NavLink>
             <span aria-hidden="true">" · "</span>
-            <NavLink href="/convertir-jpg-a-webp">"JPG → WebP"</NavLink>
+            <NavLink href="/jpg-to-webp">"JPG → WebP"</NavLink>
             <span aria-hidden="true">" · "</span>
-            <NavLink href="/redimensionar-imagen">"Resize"</NavLink>
+            <NavLink href="/resize-image">"Resize"</NavLink>
             <span aria-hidden="true">" · "</span>
-            <NavLink href="/quitar-fondo">"Remove bg"</NavLink>
+            <NavLink href="/remove-background">"Remove bg"</NavLink>
             <span aria-hidden="true">" · "</span>
-            <NavLink href="/extraer-colores-imagen">"Colors"</NavLink>
+            <NavLink href="/extract-image-colors">"Colors"</NavLink>
             <span aria-hidden="true">" · "</span>
             <NavLink href="/guides">"Guides"</NavLink>
             <span aria-hidden="true">" · "</span>

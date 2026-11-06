@@ -13,11 +13,11 @@ Home (`/`) is the compressor (default 200 KB). Other jobs have their own indexab
 | Path | Tool |
 |---|---|
 | `/` | Compress to KB |
-| `/comprimir-imagen-kb` | Compress to KB (SEO) |
-| `/convertir-jpg-a-webp` | Convert to WebP/JPG/PNG |
-| `/redimensionar-imagen` | Resize |
-| `/quitar-fondo` | Remove a flat background |
-| `/extraer-colores-imagen` | HEX palette |
+| `/compress-image-kb` | Compress to KB (SEO) |
+| `/jpg-to-webp` | Convert to WebP/JPG/PNG |
+| `/resize-image` | Resize |
+| `/remove-background` | Remove a flat background |
+| `/extract-image-colors` | HEX palette |
 | `/privacy` | Privacy / ads |
 | `/terms` | Terms |
 | `/pricing` | Pro key / 50 MB / batch ZIP |

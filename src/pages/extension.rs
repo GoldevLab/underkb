@@ -50,23 +50,23 @@ pub fn page(_req: FlowRequest) -> View {
             <h2>"Open a tool"</h2>
             <ul class="feature-grid">
                 <li>
-                    <h3><NavLink href="/comprimir-imagen-kb">"Compress to KB"</NavLink></h3>
+                    <h3><NavLink href="/compress-image-kb">"Compress to KB"</NavLink></h3>
                     <p>"Hit 50, 200, or 500 KB."</p>
                 </li>
                 <li>
-                    <h3><NavLink href="/convertir-jpg-a-webp">"JPG to WebP"</NavLink></h3>
+                    <h3><NavLink href="/jpg-to-webp">"JPG to WebP"</NavLink></h3>
                     <p>"Smaller photos for the web."</p>
                 </li>
                 <li>
-                    <h3><NavLink href="/redimensionar-imagen">"Resize"</NavLink></h3>
+                    <h3><NavLink href="/resize-image">"Resize"</NavLink></h3>
                     <p>"Fit, crop, or stretch."</p>
                 </li>
                 <li>
-                    <h3><NavLink href="/quitar-fondo">"Remove background"</NavLink></h3>
+                    <h3><NavLink href="/remove-background">"Remove background"</NavLink></h3>
                     <p>"Flat backdrop to a transparent PNG."</p>
                 </li>
                 <li>
-                    <h3><NavLink href="/extraer-colores-imagen">"Colors"</NavLink></h3>
+                    <h3><NavLink href="/extract-image-colors">"Colors"</NavLink></h3>
                     <p>"HEX palette from the photo."</p>
                 </li>
             </ul>
