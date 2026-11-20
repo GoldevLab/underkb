@@ -99,6 +99,20 @@ pub fn page(_req: FlowRequest) -> View {
                     </details>
                 </div>
             </section>
+            <section class="features" aria-labelledby="about-title">
+                <h2 id="about-title">"About this site"</h2>
+                <p>
+                    "UnderKb is an independent free utility for compressing images under a kilobyte budget and related jobs. Read "
+                    <NavLink href="/about">"who we are"</NavLink>
+                    ", "
+                    <NavLink href="/contact">"how to contact us"</NavLink>
+                    ", "
+                    <NavLink href="/privacy">"privacy"</NavLink>
+                    ", and "
+                    <NavLink href="/terms">"terms"</NavLink>
+                    "."
+                </p>
+            </section>
             {crate::landing::sister_apps()}
         </main>
     }

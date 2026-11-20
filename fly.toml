@@ -13,6 +13,8 @@ primary_region = "dfw"
   RESUMA_BODY_LIMIT = "54525952"
   SITE_URL = "https://under200kb.com"
   CARGO_MANIFEST_DIR = "/app"
+  # Public site contact (shown on /contact and Privacy). Not a secret.
+  CONTACT_EMAIL = "golfredo.pf@gmail.com"
 
 # Local counter file. Turso is the source of truth when its secrets are set.
 [[mounts]]

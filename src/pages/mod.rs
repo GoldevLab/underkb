@@ -1,4 +1,6 @@
+pub mod about;
 pub mod admin;
+pub mod contact;
 pub mod comprimir_imagen_kb;
 pub mod convertir_jpg_a_webp;
 pub mod extraer_colores_imagen;

@@ -8,6 +8,7 @@ pub fn page(_req: FlowRequest) -> View {
         "What UnderKb processes, size limits, Pro keys, and what we do not host.",
     );
     set_page_canonical(canonical_url("/terms"));
+    set_page_robots("noindex, follow");
     view! {
         <main class="content-section privacy-page">
             <p class="eyebrow">"Legal"</p>
@@ -35,6 +36,10 @@ pub fn page(_req: FlowRequest) -> View {
             </p>
             <p>
                 <NavLink href="/privacy">"Privacy"</NavLink>
+                " · "
+                <NavLink href="/about">"About"</NavLink>
+                " · "
+                <NavLink href="/contact">"Contact"</NavLink>
                 " · "
                 <NavLink href="/pricing">"Pro"</NavLink>
             </p>

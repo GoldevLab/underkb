@@ -11,9 +11,13 @@ pub fn contact_line() -> View {
                 <p>
                     "Questions: "
                     <a href={href}>{email}</a>
-                    " or "
+                    ", the "
+                    <NavLink href="/contact">"contact page"</NavLink>
+                    ", or "
                     <a href="https://github.com/GoldevLab/underkb/issues" rel="noopener">"GitHub"</a>
                     ". "
+                    <NavLink href="/about">"About"</NavLink>
+                    " · "
                     <NavLink href="/terms">"Terms"</NavLink>
                     " · "
                     <NavLink href="/pricing">"Pro"</NavLink>
@@ -24,8 +28,12 @@ pub fn contact_line() -> View {
         None => view! {
             <p>
                 "Questions: "
-                <a href="https://github.com/GoldevLab/underkb/issues" rel="noopener">"open an issue on GitHub"</a>
+                <NavLink href="/contact">"contact page"</NavLink>
+                " or "
+                <a href="https://github.com/GoldevLab/underkb/issues" rel="noopener">"GitHub"</a>
                 ". "
+                <NavLink href="/about">"About"</NavLink>
+                " · "
                 <NavLink href="/terms">"Terms"</NavLink>
                 " · "
                 <NavLink href="/pricing">"Pro"</NavLink>
@@ -41,6 +49,7 @@ pub fn page(_req: FlowRequest) -> View {
         "How UnderKb handles the images you upload, short-lived downloads, ads, and analytics.",
     );
     set_page_canonical(canonical_url("/privacy"));
+    set_page_robots("noindex, follow");
     view! {
         <main class="content-section privacy-page">
             <p class="eyebrow">"Legal"</p>

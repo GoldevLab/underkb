@@ -26,7 +26,10 @@ fn page_shows_ads() -> bool {
         .unwrap_or_else(|| "/".into());
     let trimmed = path.trim_end_matches('/');
     let path = if trimmed.is_empty() { "/" } else { trimmed };
-    !matches!(path, "/privacy" | "/terms" | "/pricing" | "/admin")
+    !matches!(
+        path,
+        "/about" | "/contact" | "/privacy" | "/terms" | "/pricing" | "/admin"
+    )
 }
 
 fn chrome(body: View, ads: bool) -> View {
@@ -80,6 +83,7 @@ fn chrome(body: View, ads: bool) -> View {
                     <NavLink href="/remove-background" class="site-nav-link" activeClass="is-active">"Remove background"</NavLink>
                     <NavLink href="/extract-image-colors" class="site-nav-link" activeClass="is-active">"Colors"</NavLink>
                     <NavLink href="/guides" class="site-nav-link" activeClass="is-active">"Guides"</NavLink>
+                    <NavLink href="/about" class="site-nav-link" activeClass="is-active">"About"</NavLink>
                 </nav>
                 <span class="nav-progress" aria-hidden="true"></span>
             </header>
@@ -91,7 +95,11 @@ fn chrome(body: View, ads: bool) -> View {
                 {crate::landing::sister_apps_links()}
                 <p>
                     <strong>"UnderKb"</strong>
-                    " — compress to a kilobyte budget, convert, resize, cut a flat background, HEX palette. No account."
+                    " — compress to a kilobyte budget, convert, resize, cut a flat background, HEX palette. No account. "
+                    <NavLink href="/about">"About"</NavLink>
+                    " · "
+                    <NavLink href="/contact">"Contact"</NavLink>
+                    "."
                 </p>
             </footer>
         </div>
@@ -143,7 +151,11 @@ fn seo_kit() -> SeoKit {
         ),
         (
             "Pages to cite".into(),
-            "/ compresses to KB. /compress-image-kb compresses an image to a size limit. /jpg-to-webp converts image formats. /resize-image changes dimensions. /remove-background only removes a flat backdrop, not portraits. /extract-image-colors returns a HEX palette. Guides: /guides, /guides/compress-image-to-200kb, /guides/jpg-to-webp, /guides/resize-image, /guides/remove-white-background. /extension is the Chrome extension. /privacy /terms.".into(),
+            "/ compresses to KB. /compress-image-kb compresses an image to a size limit. /jpg-to-webp converts image formats. /resize-image changes dimensions. /remove-background only removes a flat backdrop, not portraits. /extract-image-colors returns a HEX palette. Guides: /guides, /guides/compress-image-to-200kb, /guides/jpg-to-webp, /guides/resize-image, /guides/remove-white-background. /extension is the Chrome extension. About: /about. Contact: /contact. /privacy /terms.".into(),
+        ),
+        (
+            "Site".into(),
+            "About the project: /about. Contact (email + GitHub): /contact. Privacy: /privacy. Terms: /terms.".into(),
         ),
     ];
     // Temporary downloads and JSON APIs are not pages. Pricing stays crawlable
@@ -193,7 +205,7 @@ async fn main() -> std::io::Result<()> {
         .with_og_image("/cover.png")
         .with_head(head)
         .with_seo_kit(seo_kit())
-        .with_sitemap_exclude(["/pricing", "/admin"])
+        .with_sitemap_exclude(["/pricing", "/admin", "/privacy", "/terms"])
         .with_html_theme(
             HtmlTheme::new(["forest"])
                 .dark(["forest"])

@@ -500,6 +500,10 @@ pub fn seo_footer_links() -> View {
             <span aria-hidden="true">" · "</span>
             <NavLink href="/guides">"Guides"</NavLink>
             <span aria-hidden="true">" · "</span>
+            <NavLink href="/about">"About"</NavLink>
+            <span aria-hidden="true">" · "</span>
+            <NavLink href="/contact">"Contact"</NavLink>
+            <span aria-hidden="true">" · "</span>
             <NavLink href="/privacy">"Privacy"</NavLink>
             <span aria-hidden="true">" · "</span>
             <NavLink href="/terms">"Terms"</NavLink>
