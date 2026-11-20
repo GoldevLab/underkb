@@ -24,27 +24,39 @@ struct Guide {
     links: &'static [(&'static str, &'static str)],
 }
 
-const ALL: &[Guide] = &[COMPRESS, WEBP, RESIZE, BACKGROUND];
+const ALL: &[Guide] = &[COMPRESS, COMPRESS_ES, WEBP, RESIZE, BACKGROUND];
 
 const COMPRESS: Guide = Guide {
     path: "/guides/compress-image-to-200kb",
-    title: "Compress an Image to 200 KB | UnderKb",
-    description: "How to compress a JPG, PNG, or WebP to 200 KB. UnderKb hits a real kilobyte budget, then you download the file. No account.",
-    h1: "Compress an image to 200 KB",
+    title: "How to Compress an Image to 200 KB (JPG/PNG) Free | UnderKb",
+    description: "Reduce image size to 200 KB online. Drop a JPG, PNG, or WebP, set a real kilobyte budget, and download. Free, no account — quality first, then scale.",
+    h1: "How to compress an image to 200 KB",
     lead: "200 KB is the cap most forms, email hosts, and course sites ask for. Drop the file, leave the target at 200, and download the result. Quality drops first. Pixels shrink only if the budget still is not met.",
     job: Job::Compress,
     sections: &[
+        (
+            "Reduce image size to 200 KB in three steps",
+            "Open the compressor on this page (or /compress-image-kb). Drop a JPG, PNG, WebP, or GIF (first frame). Keep the target at 200 KB — or pick 50, 100, 500, or 1024. Download when the preview shows the new size. Free uploads are one file up to 20 MB.",
+        ),
         (
             "Set the kilobyte budget, not a quality slider",
             "A quality slider cannot promise 200 KB. The number on this page is the contract. 50 KB fits a thumbnail. 500 KB fits a lecture slide. The smallest target is 8 KB, and a photo aimed that low is scaled down hard.",
         ),
         (
-            "What the file can be",
-            "JPG, PNG, WebP, GIF, and HEIC when the browser can decode it. An animated GIF keeps the first frame. Free uploads are one file up to 20 MB. A Pro key raises that to 50 MB and a ZIP of up to 20 compress jobs.",
+            "Compress a JPG to 200 KB",
+            "Photos usually start as JPG or HEIC. Leave the format as JPG or switch to WebP if the host accepts it. UnderKb lowers JPEG/WebP quality before shrinking the long edge, so you keep resolution until the budget forces a scale.",
         ),
         (
-            "When 200 KB is the wrong target",
-            "A screenshot full of text often stays sharp as JPG or WebP and blows up as PNG. If the result still misses the budget, the page says so instead of pretending the file fits. Try JPG, or raise the target.",
+            "PNG screenshots and why they miss 200 KB",
+            "A screenshot full of text often stays sharp as JPG or WebP and blows up as PNG. If the result still misses the budget, the page says so instead of pretending the file fits. Convert to JPG/WebP, or raise the target.",
+        ),
+        (
+            "When to resize before you compress",
+            "A 4000px photo aimed at a 200 KB form is wasteful. If the form also lists max width (for example 1200px), open Resize first, then compress. Smaller pixels make the kilobyte target easier without crushing quality.",
+        ),
+        (
+            "What the file can be",
+            "JPG, PNG, WebP, GIF, and HEIC when the browser can decode it. An animated GIF keeps the first frame. A Pro key raises the free 20 MB limit to 50 MB and a ZIP of up to 20 compress jobs.",
         ),
         (
             "What we keep",
@@ -57,8 +69,16 @@ const COMPRESS: Guide = Guide {
             "Yes. 200 KB is the default. You can also pick 50, 100, 500, or 1024.",
         ),
         (
+            "How do I reduce image size to 200 KB for a form?",
+            "Drop the file here, keep 200 KB as the target, download, then upload that file to the form. If the form also caps dimensions, resize first.",
+        ),
+        (
             "Will a PNG of a photo hit 200 KB?",
             "Often no. Photos belong in JPG or WebP. PNG is for flat color and transparency.",
+        ),
+        (
+            "Is this free?",
+            "Yes. No account. Ads may appear around the tool. Pro only raises size limits.",
         ),
         (
             "Do I need an account?",
@@ -67,8 +87,59 @@ const COMPRESS: Guide = Guide {
     ],
     links: &[
         ("/compress-image-kb", "Open the compressor"),
+        ("/guides/comprimir-imagen-a-200kb", "Guía en español"),
         ("/guides/jpg-to-webp", "Convert the result to WebP"),
         ("/guides/resize-image", "Resize before you compress"),
+    ],
+};
+
+const COMPRESS_ES: Guide = Guide {
+    path: "/guides/comprimir-imagen-a-200kb",
+    title: "Cómo comprimir una imagen a 200 KB gratis (JPG/PNG) | UnderKb",
+    description: "Reduce el tamaño de una foto a 200 KB online. Sube JPG, PNG o WebP, fija un límite real en kilobytes y descarga. Gratis, sin cuenta.",
+    h1: "Cómo comprimir una imagen a 200 KB",
+    lead: "Muchos formularios, correos y aulas virtuales piden máximo 200 KB. Sube el archivo, deja el objetivo en 200 y descarga. Primero bajamos calidad; solo escalamos píxeles si hace falta.",
+    job: Job::Compress,
+    sections: &[
+        (
+            "Reducir una foto a 200 KB en tres pasos",
+            "Usa el compresor de esta página (o /compress-image-kb). Sube JPG, PNG, WebP o GIF (primer fotograma). Deja 200 KB o elige 50, 100, 500 o 1024. Descarga cuando veas el nuevo tamaño. Gratis: un archivo de hasta 20 MB.",
+        ),
+        (
+            "Límite en KB, no un deslizador de calidad",
+            "Un deslizador de calidad no garantiza 200 KB. El número de esta página es el contrato. 50 KB para miniaturas. 500 KB para una diapositiva. El mínimo es 8 KB.",
+        ),
+        (
+            "Comprimir un JPG a 200 KB",
+            "Las fotos suelen ser JPG o HEIC. Déjalo en JPG o pasa a WebP si el destino lo acepta. Bajamos calidad JPEG/WebP antes de reducir el lado largo.",
+        ),
+        (
+            "PNG de capturas que no caben en 200 KB",
+            "Una captura con mucho texto suele ir mejor en JPG o WebP. Si no cabe, la página lo dice. Convierte el formato o sube el límite.",
+        ),
+        (
+            "Qué guardamos",
+            "El resultado vive en memoria unos 30 minutos para que lo descargues y luego se borra. Sin cuenta ni galería.",
+        ),
+    ],
+    faq: &[
+        (
+            "¿Puedo comprimir un JPG a 200 KB?",
+            "Sí. 200 KB es el valor por defecto. También 50, 100, 500 o 1024.",
+        ),
+        (
+            "¿Es gratis?",
+            "Sí. Sin cuenta. Puede haber anuncios alrededor de la herramienta.",
+        ),
+        (
+            "¿Hace falta cuenta?",
+            "No. Sube y descarga.",
+        ),
+    ],
+    links: &[
+        ("/compress-image-kb", "Abrir el compresor"),
+        ("/guides/compress-image-to-200kb", "English guide"),
+        ("/guides/jpg-to-webp", "Pasar a WebP"),
     ],
 };
 
@@ -213,6 +284,22 @@ const BACKGROUND: Guide = Guide {
 pub fn render(path: &str) -> View {
     let guide = ALL.iter().find(|g| g.path == path).unwrap_or(&COMPRESS);
     crate::ads::begin_page();
+    if guide.path == COMPRESS_ES.path {
+        set_page_lang("es");
+        set_page_head_extra(format!(
+            r#"<link rel="alternate" hreflang="en" href="{}" /><link rel="alternate" hreflang="es" href="{}" /><link rel="alternate" hreflang="x-default" href="{}" />"#,
+            canonical_url(COMPRESS.path),
+            canonical_url(COMPRESS_ES.path),
+            canonical_url(COMPRESS.path),
+        ));
+    } else if guide.path == COMPRESS.path {
+        set_page_head_extra(format!(
+            r#"<link rel="alternate" hreflang="en" href="{}" /><link rel="alternate" hreflang="es" href="{}" /><link rel="alternate" hreflang="x-default" href="{}" />"#,
+            canonical_url(COMPRESS.path),
+            canonical_url(COMPRESS_ES.path),
+            canonical_url(COMPRESS.path),
+        ));
+    }
     set_page_title(guide.title);
     set_page_description(guide.description);
     set_page_canonical(canonical_url(guide.path));

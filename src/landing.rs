@@ -27,18 +27,20 @@ impl Tool {
 
     fn title(self) -> &'static str {
         match self {
-            Self::Compress => "Compress image to 200 KB — JPG, PNG, and WebP | UnderKb",
-            Self::Convert => "Convert JPG to WebP online, free | UnderKb",
-            Self::Resize => "Resize an image — fit, crop, or stretch | UnderKb",
-            Self::RemoveBg => "Remove a flat background from an image | UnderKb",
-            Self::Colors => "Extract colors from an image — HEX palette | UnderKb",
+            Self::Compress => {
+                "Compress Image to 200 KB Free — Reduce JPG/PNG Size Online | UnderKb"
+            }
+            Self::Convert => "Convert JPG to WebP online free — no watermark | UnderKb",
+            Self::Resize => "Resize an image online — fit, crop, or stretch | UnderKb",
+            Self::RemoveBg => "Remove a flat background from an image free | UnderKb",
+            Self::Colors => "Extract colors from an image — HEX palette free | UnderKb",
         }
     }
 
     fn description(self) -> &'static str {
         match self {
             Self::Compress => {
-                "Compress a photo to 50, 200, or 500 KB. JPG, PNG, or WebP. No account. Free 20 MB; Pro 50 MB or a ZIP of 20."
+                "Reduce image size to 50, 200, or 500 KB online. JPG, PNG, or WebP. Real kilobyte budget — free, no account. Pro: 50 MB or a ZIP of 20."
             }
             Self::Convert => {
                 "Turn JPG or PNG into WebP with adjustable quality. PNG and JPG export too. No account, no watermark."
@@ -67,7 +69,7 @@ impl Tool {
 
     fn h1(self) -> &'static str {
         match self {
-            Self::Compress => "Compress an image to KB",
+            Self::Compress => "Compress an image to 200 KB",
             Self::Convert => "Convert JPG to WebP",
             Self::Resize => "Resize an image",
             Self::RemoveBg => "Remove a flat background",
@@ -464,6 +466,22 @@ pub fn page(tool: Tool) -> View {
                 <div class="faq-list">{faq}</div>
             </section>
             {crate::ads::slot("landing-end", "article")}
+            {if tool == Tool::Compress {
+                view! {
+                    <section class="features" aria-labelledby="guide-title">
+                        <h2 id="guide-title">"Need the how-to?"</h2>
+                        <p>
+                            "Step-by-step for forms and email caps: "
+                            <NavLink href="/guides/compress-image-to-200kb">"compress an image to 200 KB"</NavLink>
+                            " · "
+                            <NavLink href="/guides/comprimir-imagen-a-200kb">"comprimir a 200 KB (ES)"</NavLink>
+                            "."
+                        </p>
+                    </section>
+                }
+            } else {
+                view! { <div hidden=""></div> }
+            }}
             <section class="features" aria-labelledby="more-title">
                 <h2 id="more-title">"Other tools"</h2>
                 <ul class="feature-grid">{more}</ul>

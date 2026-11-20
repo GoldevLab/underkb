@@ -151,7 +151,7 @@ fn seo_kit() -> SeoKit {
         ),
         (
             "Pages to cite".into(),
-            "/ compresses to KB. /compress-image-kb compresses an image to a size limit. /jpg-to-webp converts image formats. /resize-image changes dimensions. /remove-background only removes a flat backdrop, not portraits. /extract-image-colors returns a HEX palette. Guides: /guides, /guides/compress-image-to-200kb, /guides/jpg-to-webp, /guides/resize-image, /guides/remove-white-background. /extension is the Chrome extension. About: /about. Contact: /contact. /privacy /terms.".into(),
+            "/ and /compress-image-kb compress to a kilobyte budget (default 200 KB). /jpg-to-webp converts formats. /resize-image changes dimensions. /remove-background only removes a flat backdrop, not portraits. /extract-image-colors returns a HEX palette. Guides: /guides/compress-image-to-200kb, /guides/comprimir-imagen-a-200kb (ES), /guides/jpg-to-webp, /guides/resize-image, /guides/remove-white-background. /extension. About /about. Contact /contact.".into(),
         ),
         (
             "Site".into(),
@@ -197,9 +197,9 @@ async fn main() -> std::io::Result<()> {
     ads::apply_csp(&mut serve.security.csp);
 
     let mut app = FlowApp::new()
-        .with_title("UnderKb — compress, convert, resize, and more")
+        .with_title("Compress Image to 200 KB Free | UnderKb")
         .with_description(
-            "Free image tools: compress to KB, JPG to WebP, resize, remove a flat background, HEX palette. No account.",
+            "Free online image compressor with a real kilobyte budget (default 200 KB). Also JPG to WebP, resize, flat-background cut, HEX palette. No account.",
         )
         .with_site_url(crate::landing::public_origin())
         .with_og_image("/cover.png")

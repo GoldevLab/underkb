@@ -7,6 +7,7 @@ pub mod extraer_colores_imagen;
 pub mod extension;
 pub mod guide_background;
 pub mod guide_compress;
+pub mod guide_compress_es;
 pub mod guide_resize;
 pub mod guide_webp;
 pub mod guides;

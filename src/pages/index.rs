@@ -6,9 +6,9 @@ use crate::tool;
 
 pub fn page(_req: FlowRequest) -> View {
     crate::ads::begin_page();
-    set_page_title("Compress an image to 200 KB — free | UnderKb");
+    set_page_title("Compress Image to 200 KB Free — Online JPG/PNG Compressor | UnderKb");
     set_page_description(
-        "Free image compressor. The home dropzone hits a real kilobyte cap (default 200 KB, minimum 8 KB). Convert, resize or stretch, flat-background cut, HEX palette, and a Chrome KB extension. No account.",
+        "Free online image compressor with a real kilobyte budget. Default 200 KB for forms and email. JPG, PNG, WebP. No account — also convert, resize, and more.",
     );
     set_page_canonical(canonical_url("/"));
     set_page_json_ld(home_json_ld());
@@ -21,9 +21,9 @@ pub fn page(_req: FlowRequest) -> View {
                 <div class="hero-particles" data-hero-particles="" aria-hidden="true"></div>
                 <section class="hero">
                     <p class="eyebrow">"Free image compressor"</p>
-                    <h1>"Compress an image to KB"</h1>
+                    <h1>"Compress an image to 200 KB"</h1>
                     <p class="hero-lead">
-                        "Set a kilobyte budget. We drop quality first, then scale pixels if needed. No account. Convert, resize, and the other jobs live on their own pages — same dropzone idea."
+                        "Reduce photo size to a real kilobyte cap (default 200 KB). Quality drops first, then pixels if needed. No account. Convert, resize, and other jobs live on their own pages."
                     </p>
                     {tool::compressor()}
                 </section>
@@ -64,6 +64,14 @@ pub fn page(_req: FlowRequest) -> View {
                     <details>
                         <summary>"Can I compress a JPG to 200 KB?"</summary>
                         <p>"Yes. 200 KB is the default target. You can set 50, 100, 500, or 1024 KB."</p>
+                    </details>
+                    <details>
+                        <summary>"How do I reduce image size to 200 KB for a form upload?"</summary>
+                        <p>
+                            "Drop the file on this page, keep 200 KB, download, then upload that file to the form. Step-by-step: "
+                            <NavLink href="/guides/compress-image-to-200kb">"compress to 200 KB guide"</NavLink>
+                            "."
+                        </p>
                     </details>
                     <details>
                         <summary>"Does UnderKb store my images?"</summary>
