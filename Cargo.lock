@@ -967,7 +967,7 @@ dependencies = [
  "libc",
  "percent-encoding",
  "pin-project-lite",
- "socket2 0.6.5",
+ "socket2 0.5.10",
  "tokio",
  "tower-service",
  "tracing",
@@ -1575,7 +1575,7 @@ dependencies = [
  "quinn-udp",
  "rustc-hash",
  "rustls 0.23.43",
- "socket2 0.6.5",
+ "socket2 0.5.10",
  "thiserror 2.0.20",
  "tokio",
  "tracing",
@@ -1613,7 +1613,7 @@ dependencies = [
  "cfg_aliases",
  "libc",
  "once_cell",
- "socket2 0.6.5",
+ "socket2 0.5.10",
  "tracing",
  "windows-sys 0.61.2",
 ]
@@ -1758,8 +1758,8 @@ dependencies = [
 
 [[package]]
 name = "resuma"
-version = "2.0.1"
-source = "git+https://github.com/GoldevLab/resuma.git?rev=1cd66c3f1e5ccc86c70dc4bfcfd5558a3dc75b54#1cd66c3f1e5ccc86c70dc4bfcfd5558a3dc75b54"
+version = "2.1.1"
+source = "git+https://github.com/GoldevLab/resuma.git?rev=2e86d5e#2e86d5e995428593f4eae5bbef57742cc5cc9d2a"
 dependencies = [
  "anyhow",
  "async-stream",
@@ -1794,8 +1794,8 @@ dependencies = [
 
 [[package]]
 name = "resuma-macros"
-version = "2.0.1"
-source = "git+https://github.com/GoldevLab/resuma.git?rev=1cd66c3f1e5ccc86c70dc4bfcfd5558a3dc75b54#1cd66c3f1e5ccc86c70dc4bfcfd5558a3dc75b54"
+version = "2.1.1"
+source = "git+https://github.com/GoldevLab/resuma.git?rev=2e86d5e#2e86d5e995428593f4eae5bbef57742cc5cc9d2a"
 dependencies = [
  "proc-macro2",
  "quote",

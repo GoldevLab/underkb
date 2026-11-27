@@ -5,7 +5,7 @@ edition = "2021"
 description = "Compress any image under 200 KB — or any size you set."
 
 [dependencies]
-resuma = { git = "https://github.com/GoldevLab/resuma.git", rev = "1cd66c3f1e5ccc86c70dc4bfcfd5558a3dc75b54" }
+resuma = { git = "https://github.com/GoldevLab/resuma.git", rev = "2e86d5e" }
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
